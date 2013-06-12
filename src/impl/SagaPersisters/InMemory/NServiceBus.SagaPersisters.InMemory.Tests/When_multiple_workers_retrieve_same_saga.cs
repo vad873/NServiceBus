@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.SagaPersisters.InMemory.Tests
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using NUnit.Framework;
     using Persistence;
@@ -32,7 +33,7 @@
             inMemorySagaPersister.Save(saga);
 
             var returnedSaga1 = Task<TestSaga>.Factory.StartNew(() => inMemorySagaPersister.Get<TestSaga>(saga.Id)).Result;
-            var returnedSaga2 = inMemorySagaPersister.Get<TestSaga>("Id", saga.Id);
+            var returnedSaga2 = inMemorySagaPersister.Get<TestSaga>("Id", saga.Id).First();
 
             inMemorySagaPersister.Save(returnedSaga1);
             Assert.Throws<ConcurrencyException>(() => inMemorySagaPersister.Save(returnedSaga2));
@@ -46,12 +47,12 @@
             inMemorySagaPersister.Save(saga);
 
             var returnedSaga1 = Task<TestSaga>.Factory.StartNew(() => inMemorySagaPersister.Get<TestSaga>(saga.Id)).Result;
-            var returnedSaga2 = inMemorySagaPersister.Get<TestSaga>("Id", saga.Id);
+            var returnedSaga2 = inMemorySagaPersister.Get<TestSaga>("Id", saga.Id).First();
 
             inMemorySagaPersister.Save(returnedSaga1);
             Assert.Throws<ConcurrencyException>(() => inMemorySagaPersister.Save(returnedSaga2));
 
-            var returnedSaga3 = Task<TestSaga>.Factory.StartNew(() => inMemorySagaPersister.Get<TestSaga>("Id", saga.Id)).Result;
+            var returnedSaga3 = Task<TestSaga>.Factory.StartNew(() => inMemorySagaPersister.Get<TestSaga>("Id", saga.Id).First()).Result;
             var returnedSaga4 = inMemorySagaPersister.Get<TestSaga>(saga.Id);
 
             inMemorySagaPersister.Save(returnedSaga4);

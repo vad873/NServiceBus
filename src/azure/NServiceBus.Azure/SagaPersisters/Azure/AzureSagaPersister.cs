@@ -67,7 +67,7 @@
         }
 
        
-        T ISagaPersister.Get<T>(string property, object value)
+        IEnumerable<T> ISagaPersister.Get<T>(string property, object value)
         {
             var type = typeof (T);
             var tableName = type.Name;
@@ -118,7 +118,8 @@
 
             try
             {
-                return ToEntity<T>(table.ExecuteQuery(query).FirstOrDefault());
+
+                return table.ExecuteQuery(query).Select(e => ToEntity<T>(e)).ToList();
             }
             catch (WebException ex)
             {
@@ -128,7 +129,7 @@
                     var response = (HttpWebResponse) ex.Response;
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        return default(T);
+                        return new[] { default(T) };
                     }
                 }
 

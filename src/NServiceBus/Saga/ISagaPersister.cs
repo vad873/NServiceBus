@@ -1,6 +1,7 @@
 namespace NServiceBus.Saga
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Defines the basic functionality of a persister for storing 
@@ -34,7 +35,7 @@ namespace NServiceBus.Saga
         /// <param name="property"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        T Get<T>(string property, object value) where T : IContainSagaData;
+        IEnumerable<T> Get<T>(string property, object value) where T : IContainSagaData;
 
 		/// <summary>
         /// Sets a saga as completed and removes it from the active saga list

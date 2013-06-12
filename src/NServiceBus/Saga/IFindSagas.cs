@@ -1,6 +1,8 @@
 
 namespace NServiceBus.Saga
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Marker interface for <see cref="IFindSagas{T}.Using{M}"/>
     /// </summary>
@@ -24,7 +26,7 @@ namespace NServiceBus.Saga
             /// </summary>
             /// <param name="message"></param>
             /// <returns></returns>
-            T FindBy(M message);
+            IEnumerable<T> FindBy(M message);
         }
     }
 }

@@ -28,11 +28,32 @@ namespace NServiceBus.Sagas
         {
             var entitiesHandled = new List<IContainSagaData>();
             var sagaTypesHandled = new List<Type>();
+            bool multidispatch = false;
 
             foreach (var finder in GetFindersFor(message, builder))
             {
+                if (multidispatch)
+                    yield break;
+
                 bool sagaEntityIsPersistent = true;
-                IContainSagaData sagaEntity = UseFinderToFindSaga(finder, message);
+                var foundSagas = UseFinderToFindSaga(finder, message);
+                IContainSagaData sagaEntity = null;
+
+                if (foundSagas != null)
+                {
+                    if (foundSagas.Count() > 1)
+                    {
+                        yield return DispatchMessageAllSagas(foundSagas);
+                        multidispatch = true;
+                        continue;
+                    }
+                    else
+                    {
+                        sagaEntity = foundSagas.FirstOrDefault();
+                    }
+                }
+
+
                 Type sagaType;
 
                 if (sagaEntity == null)
@@ -69,11 +90,11 @@ namespace NServiceBus.Sagas
 
                                              if (IsTimeoutMessage(message))
                                              {
-												 HandlerInvocationCache.InvokeTimeout(saga, message);
+                                                 HandlerInvocationCache.InvokeTimeout(saga, message);
                                              }
                                              else
                                              {
-												 HandlerInvocationCache.InvokeHandle(saga, message);
+                                                 HandlerInvocationCache.InvokeHandle(saga, message);
                                              }
 
                                              if (!saga.Completed)
@@ -123,6 +144,26 @@ namespace NServiceBus.Sagas
 
                                  };
         }
+
+        Action DispatchMessageAllSagas(IEnumerable<IContainSagaData> foundSagas)
+        {
+            return () =>
+                {
+                    var message = ((UnicastBus)Bus).MessageBeingHandled;
+
+                    foreach (var sagaEntity in foundSagas)
+                    {
+                        message.ChangeMessageId(CombGuid.Generate().ToString());
+
+                        message.Headers[Headers.SagaEntityType] = sagaEntity.GetType().AssemblyQualifiedName;
+                        message.Headers[Headers.SagaId] = sagaEntity.Id.ToString();
+
+                        MessageSender.Send(message, Address.Local);
+                    }
+                };
+        }
+
+        public ISendMessages MessageSender { get; set; }
 
         IContainSagaData CreateNewSagaEntity(Type sagaType)
         {
@@ -193,12 +234,12 @@ namespace NServiceBus.Sagas
             return Features.Sagas.GetSagaEntityTypeForSagaType(sagaType);
         }
 
-        static IContainSagaData UseFinderToFindSaga(IFinder finder, object message)
+        static IEnumerable<IContainSagaData> UseFinderToFindSaga(IFinder finder, object message)
         {
             MethodInfo method = Features.Sagas.GetFindByMethodForFinder(finder, message);
 
             if (method != null)
-                return method.Invoke(finder, new object[] { message }) as IContainSagaData;
+                return method.Invoke(finder, new object[] { message }) as IEnumerable<IContainSagaData>;
 
             return null;
         }

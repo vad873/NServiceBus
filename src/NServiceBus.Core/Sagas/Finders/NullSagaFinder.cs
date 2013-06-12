@@ -1,5 +1,6 @@
 namespace NServiceBus.Sagas.Finders
 {
+    using System.Collections.Generic;
     using NServiceBus.Saga;
 
     /// <summary>
@@ -14,9 +15,9 @@ namespace NServiceBus.Sagas.Finders
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public T FindBy(object message)
+        public IEnumerable<T> FindBy(object message)
         {
-            return default(T);
+            yield return default(T);
         }
     }
 }

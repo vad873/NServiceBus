@@ -65,12 +65,12 @@ namespace NServiceBus.Persistence.Raven.SagaPersister
             return Session.Load<T>(sagaId);
         }
 
-        public T Get<T>(string property, object value) where T : IContainSagaData
+        public IEnumerable<T> Get<T>(string property, object value) where T : IContainSagaData
         {
             if (IsUniqueProperty<T>(property))
-                return GetByUniqueProperty<T>(property, value);
+                return new[] { GetByUniqueProperty<T>(property, value) };
 
-            return GetByQuery<T>(property, value).FirstOrDefault();
+            return GetByQuery<T>(property, value).ToList();
         }
 
         public void Complete(IContainSagaData saga)

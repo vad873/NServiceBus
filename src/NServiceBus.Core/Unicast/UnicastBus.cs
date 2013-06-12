@@ -1508,6 +1508,8 @@ namespace NServiceBus.Unicast
         [ThreadStatic]
         static TransportMessage _messageBeingHandled;
 
+        public TransportMessage MessageBeingHandled { get { return _messageBeingHandled; } }
+
         private volatile bool started;
         private volatile bool starting;
         private readonly object startLocker = new object();

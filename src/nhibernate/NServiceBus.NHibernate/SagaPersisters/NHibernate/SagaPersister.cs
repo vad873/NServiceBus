@@ -1,6 +1,7 @@
 namespace NServiceBus.SagaPersisters.NHibernate
 {
     using System;
+    using System.Collections.Generic;
     using Saga;
     using UnitOfWork.NHibernate;
     using global::NHibernate.Criterion;
@@ -41,11 +42,11 @@ namespace NServiceBus.SagaPersisters.NHibernate
             return UnitOfWorkManager.GetCurrentSession().Get<T>(sagaId);
         }
 
-        T ISagaPersister.Get<T>(string property, object value)
+        IEnumerable<T> ISagaPersister.Get<T>(string property, object value)
         {
             return UnitOfWorkManager.GetCurrentSession().CreateCriteria(typeof(T))
                 .Add(Restrictions.Eq(property, value))
-                .UniqueResult<T>();
+                .List<T>();
         }
 
         /// <summary>

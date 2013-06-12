@@ -31,6 +31,10 @@ namespace MyServer
                         StartSaga();
                         break;
 
+                    case "c":
+                        Bus.SendLocal(new CustomerMadePreferred { CustomerId = CustomerId });
+                        break;
+
                     case "t":
                         //make sure that the database exists!
                         StartSaga("MyApp.Tenants.Acme");
@@ -72,18 +76,21 @@ namespace MyServer
         {
             var message = new StartSagaMessage
                               {
-                                  OrderId = Guid.NewGuid()
+                                  OrderId = Guid.NewGuid(),
+                                  CustomerId = CustomerId
                               };
-            if (!string.IsNullOrEmpty(tenant))            
+            if (!string.IsNullOrEmpty(tenant))
                 message.SetHeader("tenant", tenant);
-            
-                
+
+
             Bus.SendLocal(message);
-            Console.WriteLine(string.Format("{0} - {1}", DateTime.Now.ToLongTimeString(), "Saga start message sent")); 
+            Console.WriteLine(string.Format("{0} - {1}", DateTime.Now.ToLongTimeString(), "Saga start message sent"));
         }
-       
+
+        static Guid CustomerId = Guid.NewGuid();
+
         void ScheduleTask()
-        {            
+        {
             // The actual scheduling is done in ScheduleATaskHandler
             Bus.SendLocal(new ScheduleATask());
         }

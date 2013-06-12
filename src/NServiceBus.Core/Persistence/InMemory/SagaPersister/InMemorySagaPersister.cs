@@ -21,7 +21,7 @@ namespace NServiceBus.Persistence.InMemory.SagaPersister
             }
         }
 
-        T ISagaPersister.Get<T>(string property, object value)
+        IEnumerable<T> ISagaPersister.Get<T>(string property, object value)
         {
             lock (syncRoot)
             {
@@ -33,11 +33,11 @@ namespace NServiceBus.Persistence.InMemory.SagaPersister
                         if (prop.GetValue(entity.SagaEntity, null).Equals(value))
                         {
                             entity.ReadByThreadId.Add(Thread.CurrentThread.ManagedThreadId);
-                            return (T)DeepClone(entity.SagaEntity);
+                            yield return (T)DeepClone(entity.SagaEntity);
                         }
                 }
             }
-            return default(T);
+            yield return default(T);
         }
 
         T ISagaPersister.Get<T>(Guid sagaId)

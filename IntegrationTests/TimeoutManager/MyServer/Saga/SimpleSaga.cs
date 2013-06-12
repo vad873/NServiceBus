@@ -1,23 +1,27 @@
 ﻿namespace MyServer.Saga
 {
     using System;
+    using NServiceBus;
     using NServiceBus.Saga;
 
     public class SimpleSaga:Saga<SimpleSagaData>,
         IAmStartedByMessages<StartSagaMessage>,
-        IHandleTimeouts<MyTimeOutState>
+        IHandleMessages<CustomerMadePreferred>,
+    IHandleTimeouts<MyTimeOutState>
     {
         public void Handle(StartSagaMessage message)
         {
             Data.OrderId = message.OrderId;
-            var someState = new Random().Next(10);
+            Data.CustomerId = message.CustomerId;
 
-            RequestTimeout<MyTimeOutState>(TimeSpan.FromSeconds(10), t => t.SomeValue = someState);
+            Console.Out.WriteLine("Order placed for customer: {0}",Data.CustomerId);
+
         }
 
         public override void ConfigureHowToFindSaga()
         {
-            ConfigureMapping<StartSagaMessage>(s => s.OrderId).ToSaga(m => m.OrderId);
+            ConfigureMapping<StartSagaMessage>(m => m.OrderId).ToSaga(s => s.OrderId);
+            ConfigureMapping<CustomerMadePreferred>(s => s.CustomerId).ToSaga(s => s.CustomerId);
         }
 
         void LogMessage(string message)
@@ -32,5 +36,15 @@
             LogMessage("Marking the saga as complete, be aware that this will remove the document from the storage (RavenDB)");
             MarkAsComplete();
         }
+
+        public void Handle(CustomerMadePreferred message)
+        {
+            Console.Out.WriteLine("Order {0} discounted since customer {1} was made prefered", Data.OrderId, Data.CustomerId);
+        }
+    }
+
+    public class CustomerMadePreferred:IMessage
+    {
+        public Guid CustomerId { get; set; }
     }
 }

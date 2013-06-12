@@ -6,5 +6,6 @@ namespace MyServer.Saga
     public class StartSagaMessage:IMessage
     {
         public Guid OrderId { get; set; }
+        public Guid CustomerId { get; set; }
     }
 }

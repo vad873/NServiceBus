@@ -1,6 +1,8 @@
 namespace NServiceBus.Sagas.Finders
 {
     using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
     using NServiceBus.Saga;
 
     /// <summary>
@@ -20,17 +22,17 @@ namespace NServiceBus.Sagas.Finders
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public T FindBy(object message)
+        public IEnumerable<T> FindBy(object message)
         {
             if (SagaPersister == null)
-                return default(T);
+                return new []{default(T)};
 
             var sagaIdHeader = Headers.GetMessageHeader(message, Headers.SagaId);
 
             if (string.IsNullOrEmpty(sagaIdHeader))
-                return default(T);
+                return new[] { default(T) };
 
-            return SagaPersister.Get<T>( Guid.Parse(sagaIdHeader));
+            return new[] { SagaPersister.Get<T>(Guid.Parse(sagaIdHeader)) };
         }
     }
 }

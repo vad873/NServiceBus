@@ -151,6 +151,7 @@
     <Compile Include="BasicMessaging\When_using_a_custom_correlation_id.cs" />
     <Compile Include="BasicMessaging\When_using_callbacks_in_a_scaleout_scenario.cs" />
     <Compile Include="Configuration\When_a_config_override_is_found.cs" />
+    <Compile Include="DependencyInjection\When_a_known_interface_is_already_registered.cs" />
     <Compile Include="Encryption\When_using_encryption.cs" />
     <Compile Include="EndpointTemplates\BusExtensions.cs" />
     <Compile Include="Gateway\When_using_a_custom_correlation_id.cs" />

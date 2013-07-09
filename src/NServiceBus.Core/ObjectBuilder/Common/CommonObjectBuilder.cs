@@ -91,6 +91,7 @@ namespace NServiceBus.ObjectBuilder.Common
         {
             var lifecycle = MapToDependencyLifecycle(callModel);
             
+            
             Container.Configure(typeof(T), lifecycle);
 
             return new ComponentConfig<T>(Container);

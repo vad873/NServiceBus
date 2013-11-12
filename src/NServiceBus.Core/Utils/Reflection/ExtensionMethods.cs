@@ -2,16 +2,19 @@ namespace NServiceBus.Utils.Reflection
 {
     using System;
     using System.Collections;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
 
     /// <summary>
     /// Contains extension methods
     /// </summary>
+    [ObsoleteEx(RemoveInVersion = "5.0", TreatAsErrorFromVersion = "5.0", Message= "These will be made internal in version 5.0")]
     public static class ExtensionMethods
     {
         /// <summary>
         /// Useful for finding if a type is (for example) IMessageHandler{T} where T : IMessage.
-        /// </summary>
+        /// </summary>  
+        [ObsoleteEx(RemoveInVersion = "5.0", TreatAsErrorFromVersion = "4.3", Message= "No longer used. to be deleted")]
         public static bool IsGenericallyEquivalent(this Type type, Type openGenericType, Type genericArg)
         {
             var result = false;
@@ -111,13 +114,20 @@ namespace NServiceBus.Utils.Reflection
             return structuralEquatable.Equals(MsPublicKeyToken, StructuralComparisons.StructuralEqualityComparer);
         }
 
+        private static readonly ConcurrentDictionary<Type, bool> IsSystemTypeCache = new ConcurrentDictionary<Type, bool>();
+
         public static bool IsSystemType(this Type type)
         {
-            var nameOfContainingAssembly = type.Assembly.GetName().GetPublicKeyToken();
+            bool result;
 
-            return IsClrType(nameOfContainingAssembly);
+            if (!IsSystemTypeCache.TryGetValue(type, out result))
+            {
+                var nameOfContainingAssembly = type.Assembly.GetName().GetPublicKeyToken();
+                IsSystemTypeCache[type] = result = IsClrType(nameOfContainingAssembly);
+            }
+
+            return result;
         }
-
 
         public static bool IsNServiceBusMarkerInterface(this Type type)
         {

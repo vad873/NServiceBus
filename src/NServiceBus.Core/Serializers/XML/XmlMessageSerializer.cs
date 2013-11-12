@@ -27,11 +27,22 @@ namespace NServiceBus.Serializers.XML
         string nameSpace = "http://tempuri.net";
         /// <summary>
         /// The namespace to place in outgoing XML.
+        /// <para>If the provided namespace ends with trailing forward slashes, those will be removed on the fly.</para>
         /// </summary>
         public string Namespace
         {
             get { return nameSpace; }
-            set { nameSpace = value; }
+            set { nameSpace = TrimPotentialTralingForwardSlashes(value); }
+        }
+
+        string TrimPotentialTralingForwardSlashes(string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.TrimEnd(new[] { '/' });
         }
 
         /// <summary>
@@ -156,16 +167,14 @@ namespace NServiceBus.Serializers.XML
             var fields = GetAllFieldsForType(t);
             typeToFields[t] = fields;
 
-
             foreach (var p in props)
             {
                 logger.Debug("Handling property: " + p.Name);
 
-                propertyInfoToLateBoundProperty[p] = DelegateFactory.Create(p);
-
+                DelegateFactory.Create(p);
                 if (!isKeyValuePair)
                 {
-                    propertyInfoToLateBoundPropertySet[p] = DelegateFactory.CreateSet(p);
+                    DelegateFactory.CreateSet(p);
                 }
 
                 InitType(p.PropertyType);
@@ -175,11 +184,10 @@ namespace NServiceBus.Serializers.XML
             {
                 logger.Debug("Handling field: " + f.Name);
 
-                fieldInfoToLateBoundField[f] = DelegateFactory.Create(f);
-
+                DelegateFactory.Create(f);
                 if (!isKeyValuePair)
                 {
-                    fieldInfoToLateBoundFieldSet[f] = DelegateFactory.CreateSet(f);
+                    DelegateFactory.CreateSet(f);
                 }
 
                 InitType(f.FieldType);
@@ -439,12 +447,11 @@ namespace NServiceBus.Serializers.XML
                     logger.Debug("Trying to deserialize message to " + baseType.FullName);
                     return baseType;
                 }
-                // ReSharper disable EmptyGeneralCatchClause
+                // ReSharper disable once EmptyGeneralCatchClause
                 catch
                 {
                     // intentionally swallow exception
                 } 
-                // ReSharper restore EmptyGeneralCatchClause
             }
 
             throw new TypeLoadException("Could not determine type for node: '" + node.Name + "'.");
@@ -478,7 +485,8 @@ namespace NServiceBus.Serializers.XML
                     var val = GetPropertyValue(type ?? prop.PropertyType, n);
                     if (val != null)
                     {
-                        propertyInfoToLateBoundPropertySet[prop].Invoke(result, val);
+                        var propertySet = DelegateFactory.CreateSet(prop);
+                        propertySet.Invoke(result, val);
                         continue;
                     }
                 }
@@ -489,7 +497,8 @@ namespace NServiceBus.Serializers.XML
                     var val = GetPropertyValue(type ?? field.FieldType, n);
                     if (val != null)
                     {
-                        fieldInfoToLateBoundFieldSet[field].Invoke(result, val);
+                        var fieldSet = DelegateFactory.CreateSet(field);
+                        fieldSet.Invoke(result, val);
                     }
                 }
             }
@@ -905,12 +914,12 @@ namespace NServiceBus.Serializers.XML
                 {
                     throw new NotSupportedException(string.Format("Type {0} contains an indexed property named {1}. Indexed properties are not supported on message types.", t.FullName, prop.Name));
                 }
-                WriteEntry(prop.Name, prop.PropertyType, propertyInfoToLateBoundProperty[prop].Invoke(obj), builder);
+                WriteEntry(prop.Name, prop.PropertyType, DelegateFactory.Create(prop).Invoke(obj), builder);
             }
 
             foreach (var field in typeToFields[t])
             {
-                WriteEntry(field.Name, field.FieldType, fieldInfoToLateBoundField[field].Invoke(obj), builder);
+                WriteEntry(field.Name, field.FieldType, DelegateFactory.Create(field).Invoke(obj), builder);
             }
         }
 
@@ -1371,11 +1380,6 @@ namespace NServiceBus.Serializers.XML
         static readonly Dictionary<Type, Type> typesToCreateForArrays = new Dictionary<Type, Type>();
         static readonly Dictionary<Type, Type> typesToCreateForEnumerables = new Dictionary<Type, Type>();
         static readonly List<Type> typesBeingInitialized = new List<Type>();
-
-        static readonly Dictionary<PropertyInfo, LateBoundProperty> propertyInfoToLateBoundProperty = new Dictionary<PropertyInfo, LateBoundProperty>();
-        static readonly Dictionary<FieldInfo, LateBoundField> fieldInfoToLateBoundField = new Dictionary<FieldInfo, LateBoundField>();
-        static readonly Dictionary<PropertyInfo, LateBoundPropertySet> propertyInfoToLateBoundPropertySet = new Dictionary<PropertyInfo, LateBoundPropertySet>();
-        static readonly Dictionary<FieldInfo, LateBoundFieldSet> fieldInfoToLateBoundFieldSet = new Dictionary<FieldInfo, LateBoundFieldSet>();
 
         [ThreadStatic]
         static string defaultNameSpace;

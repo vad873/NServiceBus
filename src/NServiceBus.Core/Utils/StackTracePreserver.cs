@@ -7,6 +7,10 @@
     {
         public static void PreserveStackTrace(this Exception exception)
         {
+            if (!exception.GetType().IsSerializable)
+            {
+                return;
+            }
             try
             {
                 var context = new StreamingContext(StreamingContextStates.CrossAppDomain);
@@ -17,6 +21,7 @@
                 objectManager.RegisterObject(exception, 1, serializationInfo); // prepare for SetObjectData
                 objectManager.DoFixups(); // ObjectManager calls SetObjectData
             }
+            // ReSharper disable once EmptyGeneralCatchClause
             catch (Exception)
             {
                 //this is a best effort. if we fail to patch the stack trace just let it go

@@ -2,6 +2,7 @@ namespace NServiceBus.Timeout.Hosting.Windows
 {
     using System;
     using Faults;
+    using Features;
     using Logging;
     using Transports;
     using Unicast.Queuing;
@@ -74,6 +75,8 @@ namespace NServiceBus.Timeout.Hosting.Windows
 
         void SetExceptionHeaders(TransportMessage message, Exception e, string reason)
         {
+            message.Headers[Headers.WasSlrInvoked] = "false";
+
             message.Headers["NServiceBus.ExceptionInfo.Reason"] = reason;
             message.Headers["NServiceBus.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
 

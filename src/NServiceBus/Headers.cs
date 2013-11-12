@@ -215,6 +215,11 @@
         public const string MessageIntent = "NServiceBus.MessageIntent";
 
         /// <summary>
+        /// Indicates whether the second level retries was invoked.
+        /// </summary>
+        public const string WasSlrInvoked = "NServiceBus.WasSecondLevelRetriesInvoked";
+
+        /// <summary>
         /// Get the header with the given key. Cannot be used to change its value.
         /// </summary>
         /// <param name="msg">The message to retrieve a header from.</param>

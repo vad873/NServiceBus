@@ -1,6 +1,7 @@
 namespace NServiceBus.Faults.Forwarder
 {
     using System;
+    using Features;
     using Logging;
     using SecondLevelRetries.Helpers;
     using Transports;
@@ -93,6 +94,8 @@ namespace NServiceBus.Faults.Forwarder
 
         void SetExceptionHeaders(TransportMessage message, Exception e)
         {
+            message.Headers[Headers.WasSlrInvoked] = Feature.IsEnabled<SecondLevelRetries>() ? "true" : "false";
+
             message.Headers["NServiceBus.ExceptionInfo.ExceptionType"] = e.GetType().FullName;
 
             if (e.InnerException != null)

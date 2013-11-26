@@ -6,33 +6,14 @@
 
     class SendLogicalMessagesContext : BehaviorContext
     {
-        public SendLogicalMessagesContext(BehaviorContext parentContext, SendOptions sendOptions,IEnumerable<LogicalMessage> messages)
+        public SendOptions SendOptions { get; private set; }
+        public IEnumerable<LogicalMessage> LogicalMessages { get; private set; }
+
+        public SendLogicalMessagesContext(BehaviorContext parentContext, SendOptions sendOptions, IEnumerable<LogicalMessage> messages)
             : base(parentContext)
         {
-            Set(sendOptions);
-            Set(messages);
-        }
-
-        public SendOptions SendOptions
-        {
-            get { return Get<SendOptions>(); }
-        }
-
-        public IEnumerable<LogicalMessage> LogicalMessages
-        {
-            get { return Get<IEnumerable<LogicalMessage>>(); }
-        }
-
-        public TransportMessage IncomingMessage
-        {
-            get
-            {
-                TransportMessage message;
-
-                parentContext.TryGet(ReceivePhysicalMessageContext.IncomingPhysicalMessageKey, out message);
-
-                return message;
-            }
+            SendOptions = sendOptions;
+            LogicalMessages = messages;
         }
     }
 }

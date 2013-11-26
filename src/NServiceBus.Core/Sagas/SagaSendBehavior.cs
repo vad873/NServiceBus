@@ -6,6 +6,7 @@
 
     class SagaSendBehavior : IBehavior<SendLogicalMessageContext>
     {
+        public PipelineFactory PipelineFactory { get; set; }
         public void Invoke(SendLogicalMessageContext context, Action next)
         {
             ActiveSagaInstance saga;
@@ -14,25 +15,26 @@
             {
                 context.MessageToSend.Headers[Headers.OriginatingSagaId] = saga.Instance.Entity.Id.ToString();
                 context.MessageToSend.Headers[Headers.OriginatingSagaType] = saga.SagaType.AssemblyQualifiedName;
-
             }
 
             //auto correlate with the saga we are replying to if needed
-            if (context.SendOptions.Intent == MessageIntentEnum.Reply && context.IncomingMessage != null)
+            var transportMessage = PipelineFactory.CurrentTransportMessage;
+
+            if (context.ParentContext.SendOptions.Intent == MessageIntentEnum.Reply && transportMessage != null)
             {
                 //for now we revert back to send since this would be a breaking change. We'll fix this in v4.1
                 //https://github.com/NServiceBus/NServiceBus/issues/1409
-                context.SendOptions.Intent = MessageIntentEnum.Send;
+                context.ParentContext.SendOptions.Intent = MessageIntentEnum.Send;
 
                 string sagaId;
                 string sagaType;
 
-                if (context.IncomingMessage.Headers.TryGetValue(Headers.OriginatingSagaId, out sagaId))
+                if (transportMessage.Headers.TryGetValue(Headers.OriginatingSagaId, out sagaId))
                 {
                     context.MessageToSend.Headers[Headers.SagaId] = sagaId;
                 }
 
-                if (context.IncomingMessage.Headers.TryGetValue(Headers.OriginatingSagaType, out sagaType))
+                if (transportMessage.Headers.TryGetValue(Headers.OriginatingSagaType, out sagaType))
                 {
                     context.MessageToSend.Headers[Headers.SagaType] = sagaType;
                 }

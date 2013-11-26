@@ -38,7 +38,7 @@
                     Invocation = (handlerInstance, message) => HandlerInvocationCache.InvokeHandle(handlerInstance, message)
                 };
 
-                if (PipelineFactory.InvokeHandlerPipeline(loadedHandler).ChainAborted)
+                if (PipelineFactory.InvokeHandlerPipeline(context, loadedHandler).ChainAborted)
                 {
                     //if the chain was aborted skip the other handlers
                     break;

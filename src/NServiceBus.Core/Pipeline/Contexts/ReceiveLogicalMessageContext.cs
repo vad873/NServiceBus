@@ -4,15 +4,14 @@
 
     class ReceiveLogicalMessageContext : BehaviorContext
     {
-        public ReceiveLogicalMessageContext(BehaviorContext parentContext, LogicalMessage message)
+        public ReceivePhysicalMessageContext ParentContext { get; private set; }
+        public LogicalMessage LogicalMessage { get; private set; }
+
+        public ReceiveLogicalMessageContext(ReceivePhysicalMessageContext parentContext, LogicalMessage logicalMessage)
             : base(parentContext)
         {
-            Set(message);
-        }
-
-        public LogicalMessage LogicalMessage
-        {
-            get { return Get<LogicalMessage>(); }
+            ParentContext = parentContext;
+            LogicalMessage = logicalMessage;
         }
     }
 }

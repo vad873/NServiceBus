@@ -26,7 +26,7 @@
 
         public void PreparePhysicalMessagePipelineContext(TransportMessage message)
         {
-            contextStacker.Push(new ReceivePhysicalMessageContext(CurrentContext, message));
+            contextStacker.Push(new ReceivePhysicalMessageContext(new RootContext(RootBuilder), message));
         }
 
         public void InvokeReceivePhysicalMessagePipeline()
@@ -63,7 +63,13 @@
             contextStacker.Pop();
         }
 
-        public void InvokeLogicalMessagePipeline(LogicalMessage message)
+
+        public void InvokeLogicalMessagePipeline(LogicalMessage logicalMessage)
+        {
+            InvokeLogicalMessagePipeline(new ReceivePhysicalMessageContext(new RootContext(RootBuilder), null), logicalMessage);
+        }
+
+        public void InvokeLogicalMessagePipeline(ReceivePhysicalMessageContext receivePhysicalMessageContext, LogicalMessage message)
         {
             var pipeline = new BehaviorChain<ReceiveLogicalMessageContext>();
 
@@ -72,8 +78,7 @@
             pipeline.Add<DataBusReceiveBehavior>();
             pipeline.Add<LoadHandlersBehavior>();
 
-
-            var context = new ReceiveLogicalMessageContext(CurrentContext, message);
+            var context = new ReceiveLogicalMessageContext(receivePhysicalMessageContext, message);
 
             contextStacker.Push(context);
 
@@ -82,14 +87,14 @@
             contextStacker.Pop();
         }
 
-        public HandlerInvocationContext InvokeHandlerPipeline(MessageHandler handler)
+        public HandlerInvocationContext InvokeHandlerPipeline(ReceiveLogicalMessageContext receiveLogicalMessageContext, MessageHandler handler)
         {
             var pipeline = new BehaviorChain<HandlerInvocationContext>();
 
             pipeline.Add<SagaPersistenceBehavior>();
             pipeline.Add<InvokeHandlersBehavior>();
 
-            var context = new HandlerInvocationContext(CurrentContext, handler);
+            var context = new HandlerInvocationContext(receiveLogicalMessageContext, handler);
 
             contextStacker.Push(context);
 
@@ -119,7 +124,7 @@
             return context;
         }
 
-        public SendLogicalMessageContext InvokeSendPipeline(SendOptions sendOptions, LogicalMessage message)
+        public SendLogicalMessageContext InvokeSendPipeline(SendLogicalMessagesContext parentContext, SendOptions sendOptions, LogicalMessage message)
         {
             var pipeline = new BehaviorChain<SendLogicalMessageContext>();
 
@@ -130,7 +135,7 @@
             //todo: we'll make this optional as soon as we have a way to manipulate the pipeline
             pipeline.Add<DataBusSendBehavior>();
 
-            var context = new SendLogicalMessageContext(CurrentContext, sendOptions, message);
+            var context = new SendLogicalMessageContext(parentContext, message);
 
             contextStacker.Push(context);
 
@@ -158,6 +163,16 @@
             contextStacker.Pop();
         }
 
+
+        public TransportMessage CurrentTransportMessage
+        {
+            get
+            {
+                TransportMessage current;
+                CurrentContext.TryGet(ReceivePhysicalMessageContext.IncomingPhysicalMessageKey, out current);
+                return current;
+            }
+        }
         public BehaviorContext CurrentContext
         {
             get

@@ -29,7 +29,7 @@
             }
             
             currentContext = context;
-            physicalMessage = context.PhysicalMessage;
+            physicalMessage = context.ParentContext.ParentContext.PhysicalMessage;
 
             // We need this for backwards compatibility because in v4.0.0 we still have this headers being sent as part of the message even if MessageIntent == MessageIntentEnum.Publish
             if (physicalMessage.MessageIntent == MessageIntentEnum.Publish)
@@ -40,13 +40,13 @@
 
             var sagaInstanceState = new ActiveSagaInstance(saga);
 
-            var loadedEntity = TryLoadSagaEntity(saga, context.LogicalMessage);
+            var loadedEntity = TryLoadSagaEntity(saga, context.ParentContext.LogicalMessage);
 
 
             if (loadedEntity == null)
             {
                 //if this message are not allowed to start the saga
-                if (!Features.Sagas.ShouldMessageStartSaga(sagaInstanceState.SagaType,context.LogicalMessage.MessageType))
+                if (!Features.Sagas.ShouldMessageStartSaga(sagaInstanceState.SagaType,context.ParentContext.LogicalMessage.MessageType))
                 {
                     sagaInstanceState.MarkAsNotFound();
 
@@ -62,7 +62,7 @@
             }
 
 
-            if (IsTimeoutMessage(context.LogicalMessage))
+            if (IsTimeoutMessage(context.ParentContext.LogicalMessage))
             {
                 context.MessageHandler.Invocation = HandlerInvocationCache.InvokeTimeout;
             }
@@ -104,12 +104,12 @@
 
         void InvokeSagaNotFoundHandlers()
         {
-            logger.InfoFormat("Could not find a saga for the message type {0} with id {1}. Going to invoke SagaNotFoundHandlers.", currentContext.LogicalMessage.MessageType.FullName, physicalMessage.Id);
+            logger.InfoFormat("Could not find a saga for the message type {0} with id {1}. Going to invoke SagaNotFoundHandlers.", currentContext.ParentContext.LogicalMessage.MessageType.FullName, physicalMessage.Id);
 
             foreach (var handler in currentContext.Builder.BuildAll<IHandleSagaNotFound>())
             {
                 logger.DebugFormat("Invoking SagaNotFoundHandler: {0}", handler.GetType().FullName);
-                handler.Handle(currentContext.LogicalMessage.Instance);
+                handler.Handle(currentContext.ParentContext.LogicalMessage.Instance);
             }
         }
 

@@ -9,12 +9,12 @@
     {
         public void Invoke(SendLogicalMessageContext context, Action next)
         {
-            if (context.SendOptions.Destination == Address.Undefined)
+            if (context.ParentContext.SendOptions.Destination == Address.Undefined)
             {
                 throw new InvalidOperationException("No destination specified for message: " + context.MessageToSend.MessageType);
             }
 
-            switch (context.SendOptions.Intent)
+            switch (context.ParentContext.SendOptions.Intent)
             {
                 case MessageIntentEnum.Init:
                 case MessageIntentEnum.Subscribe:
@@ -27,7 +27,7 @@
                     MessagingBestPractices.AssertIsValidForReply(context.MessageToSend.MessageType);
                     break;
                 case MessageIntentEnum.Send:
-                    MessagingBestPractices.AssertIsValidForSend(context.MessageToSend.MessageType, context.SendOptions.Intent);
+                    MessagingBestPractices.AssertIsValidForSend(context.MessageToSend.MessageType, context.ParentContext.SendOptions.Intent);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

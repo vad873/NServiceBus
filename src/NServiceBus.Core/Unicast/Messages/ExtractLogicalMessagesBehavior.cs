@@ -59,7 +59,7 @@
           
             foreach (var message in messages)
             {
-                PipelineFactory.InvokeLogicalMessagePipeline(message);
+                PipelineFactory.InvokeLogicalMessagePipeline(context, message);
             }
 
             if (!messages.Any())

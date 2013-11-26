@@ -6,8 +6,6 @@ namespace NServiceBus.Core.Tests.DataBus
     using System.Runtime.Serialization.Formatters.Binary;
     using NUnit.Framework;
     using Pipeline.Contexts;
-    using Rhino.Mocks;
-    using Unicast;
     using Unicast.Messages;
 
     [TestFixture]
@@ -22,7 +20,7 @@ namespace NServiceBus.Core.Tests.DataBus
             };
 
             var message = new LogicalMessage(metadata, new MessageWithNullDataBusProperty(), new Dictionary<string, string>());
-            var context = new SendLogicalMessageContext(null,new SendOptions(), message);
+            var context = new SendLogicalMessageContext(null, message);
 
             
             using (var stream = new MemoryStream())

@@ -14,7 +14,7 @@
         {
             foreach (var logicalMessage in context.LogicalMessages)
             {
-                PipelineFactory.InvokeSendPipeline(context.SendOptions,logicalMessage);
+                PipelineFactory.InvokeSendPipeline(context, context.SendOptions, logicalMessage);
             }
             next();
         }

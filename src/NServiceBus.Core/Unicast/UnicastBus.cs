@@ -10,12 +10,10 @@ namespace NServiceBus.Unicast
     using Audit;
     using Licensing;
     using Logging;
-    using MessageHeaders;
     using MessageInterfaces;
     using Messages;
     using ObjectBuilder;
     using Pipeline;
-    using Pipeline.Contexts;
     using Routing;
     using Satellites;
     using Serialization;
@@ -829,9 +827,8 @@ namespace NServiceBus.Unicast
         {
             get
             {
-                TransportMessage current;
-
-                if (!PipelineFactory.CurrentContext.TryGet(ReceivePhysicalMessageContext.IncomingPhysicalMessageKey, out current))
+                var current = PipelineFactory.CurrentTransportMessage;
+                if (current == null)
                 {
                     return null;
                 }
@@ -1041,13 +1038,11 @@ namespace NServiceBus.Unicast
         {
             get
             {
-                TransportMessage current;
-
-                if (!PipelineFactory.CurrentContext.TryGet(ReceivePhysicalMessageContext.IncomingPhysicalMessageKey, out current))
+                var current = PipelineFactory.CurrentTransportMessage;
+                if (current == null)
                 {
-                    throw new InvalidOperationException("There is no current message beeing processed");
+                    throw new InvalidOperationException("There is no current message being processed");
                 }
-
                 return current;
             }
         }

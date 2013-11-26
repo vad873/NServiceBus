@@ -48,7 +48,7 @@
             //todo: pull this out to the distributor when we split it to a separate repo
             if (UnicastBus.PropagateReturnAddressOnSend)
             {
-                var incomingMessage = context.IncomingMessage;
+                var incomingMessage = PipelineFactory.CurrentTransportMessage;
 
                 if (incomingMessage != null)
                 {

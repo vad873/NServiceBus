@@ -2,17 +2,15 @@
 {
     class ReceivePhysicalMessageContext : BehaviorContext
     {
-        public ReceivePhysicalMessageContext(BehaviorContext parentContext, TransportMessage transportMessage)
+        public TransportMessage PhysicalMessage { get; private set; }
+
+        public ReceivePhysicalMessageContext(RootContext parentContext, TransportMessage physicalMessage)
             : base(parentContext)
         {
+            PhysicalMessage = physicalMessage;
             handleCurrentMessageLaterWasCalled = false;
 
-            Set(IncomingPhysicalMessageKey, transportMessage);
-        }
-
-        public TransportMessage PhysicalMessage
-        {
-            get { return Get<TransportMessage>(IncomingPhysicalMessageKey); }
+            Set(IncomingPhysicalMessageKey, physicalMessage);
         }
 
         public static string IncomingPhysicalMessageKey

@@ -130,6 +130,7 @@
     <Compile Include="Config\When_using_convention_based_messages.cs" />
     <Compile Include="Conventions\MessageConventionSpecs.cs" />
     <Compile Include="AttributeTests.cs" />
+    <Compile Include="Deserializing\ExtractLogicalMessageBehaviorTests.cs" />
     <Compile Include="Hosting\When_creating_host_information_from_environment.cs" />
     <Compile Include="Pipeline\BehaviorChainTests.cs" />
     <Compile Include="SetLoggingLibraryTests.cs" />

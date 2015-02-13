@@ -11,7 +11,7 @@ namespace MessageMapperTests
         [Test]
         public void Class_abstract_generic_with_only_properties_generic_should_not_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var genericClassType = typeof(GenericAbstractCommand<>);
             mapper.Initialize(new[] { genericClassType });
             Assert.Null(mapper.GetMappedTypeFor(genericClassType));
@@ -24,7 +24,7 @@ namespace MessageMapperTests
         [Test]
         public void Class_generic_with_only_properties_generic_should_not_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var abstractClassType = typeof(GenericCommand<>);
             mapper.Initialize(new[] { abstractClassType });
             Assert.Null(mapper.GetMappedTypeFor(abstractClassType));
@@ -39,7 +39,7 @@ namespace MessageMapperTests
         [Test]
         public void Class_derived_from_generic_with_only_properties_generic_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var abstractClassType = typeof(DerivedGenericCommand);
             mapper.Initialize(new[] { abstractClassType });
             Assert.NotNull(mapper.GetMappedTypeFor(abstractClassType));
@@ -56,7 +56,7 @@ namespace MessageMapperTests
         [Test]
         public void Class_concrete_generic_with_only_properties_generic_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var abstractClassType = typeof(GenericCommand<Data>);
             mapper.Initialize(new[] { abstractClassType });
             Assert.NotNull(mapper.GetMappedTypeFor(abstractClassType));
@@ -65,7 +65,7 @@ namespace MessageMapperTests
         [Test]
         public void Class_abstract_with_only_properties_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var abstractClassType = typeof(SimpleAbstractClass);
             mapper.Initialize(new[] { abstractClassType });
             Assert.NotNull(mapper.GetMappedTypeFor(abstractClassType));
@@ -78,7 +78,7 @@ namespace MessageMapperTests
         [Test,Ignore]
         public void Class_abstract_with_methods_should_not_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var abstractClassType = typeof(SimpleAbstractClassWithMethods);
             mapper.Initialize(new[] { abstractClassType });
             Assert.Null(mapper.GetMappedTypeFor(abstractClassType));
@@ -92,7 +92,7 @@ namespace MessageMapperTests
         [Test]
         public void Interfaces_generic_with_only_properties_should_not_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var genericInterfaceType = typeof(InterfaceGenericWithProperties<>);
             mapper.Initialize(new[] { genericInterfaceType });
             Assert.Null(mapper.GetMappedTypeFor(genericInterfaceType));
@@ -107,7 +107,7 @@ namespace MessageMapperTests
         [Test]
         public void Interfaces_generic_with_methods_should_not_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var genericInterfaceType = typeof(InterfaceGenericWithMethods<>);
             mapper.Initialize(new[] { genericInterfaceType });
             Assert.Null(mapper.GetMappedTypeFor(genericInterfaceType));
@@ -123,7 +123,7 @@ namespace MessageMapperTests
         [Test]
         public void Interfaces_with_only_properties_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var simpleInterfaceType = typeof(InterfaceWithOnlyProperties);
             mapper.Initialize(new[] { simpleInterfaceType });
             Assert.NotNull(mapper.GetMappedTypeFor(simpleInterfaceType));

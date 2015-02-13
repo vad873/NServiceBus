@@ -12,7 +12,7 @@
         [Test]
         public void Class_implementing_iEnumerable_string_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]
                 {
                     typeof(ClassImplementingIEnumerable<string>)
@@ -24,7 +24,7 @@
         [Test]
         public void Class_implementing_iEnumerable_string_and_iReturnMyself_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]
                 {
                     typeof(ClassImplementingIEnumerableAndIReturnMyself<string>)
@@ -54,7 +54,7 @@
         [Test]
         public void Class_implementing_iEnumerable_returnMyself_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]
                 {
                     typeof(ClassImplementingIEnumerable<ReturnMyself>)
@@ -66,7 +66,7 @@
         [Test]
         public void Class_inheriting_from_iEnumerable_returnMyself_implementation_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]
                 {
                     typeof(DerivedReturnMyselfCollectionObject)
@@ -82,7 +82,7 @@
         [Test]
         public void Class_implementing_returnMyself_inheriting_from_iEnumerable_returnMyself_implementation_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]
                 {
                     typeof(DerivedReturnMyselfCollectionImplementingIReturnMyself)
@@ -103,7 +103,7 @@
         [Test]
         public void Class_implementing_base_returnMyself_inheriting_from_iEnumerable_returnMyself_implementation_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]
                 {
                     typeof(DerivedReturnMyselfCollectionImplementingBaseIReturnMyself)

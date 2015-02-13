@@ -13,11 +13,11 @@ namespace NServiceBus.Serializers.XML.Test
              var types = new List<Type> {typeof (T)};
              if (mapper == null)
              {
-                 mapper = new MessageMapper();
+                 mapper = new MessageMapper(null);
              }
 
              mapper.Initialize(types);
-             var serializer = new XmlMessageSerializer(mapper, new Conventions());
+             var serializer = new XmlMessageSerializer(null, mapper, new Conventions());
 
              serializer.Initialize(types);
 
@@ -26,9 +26,9 @@ namespace NServiceBus.Serializers.XML.Test
 
          public static XmlMessageSerializer Create(params Type[] types)
          {
-             var mapper = new MessageMapper();
+             var mapper = new MessageMapper(null);
              mapper.Initialize(types);
-             var serializer = new XmlMessageSerializer(mapper, new Conventions());
+             var serializer = new XmlMessageSerializer(null, mapper, new Conventions());
 
              serializer.Initialize(types);
 

@@ -29,7 +29,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
         public void SerializeInvalidCharacters()
         {
-            IMessageMapper mapper = new MessageMapper();
+            IMessageMapper mapper = new MessageMapper(null);
             var serializer = SerializerFactory.Create<MessageWithInvalidCharacter>();
             var msg = mapper.CreateInstance<MessageWithInvalidCharacter>();
 
@@ -329,7 +329,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
         public void TestMultipleInterfacesDuplicatedProperty()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var serializer = SerializerFactory.Create<IThird>(mapper);
             var msgBeforeSerialization = mapper.CreateInstance<IThird>(x => x.FirstName = "Danny");
 
@@ -396,7 +396,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
         public void TestInterfaces()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             var serializer = SerializerFactory.Create<IM2>(mapper);
 
 
@@ -506,7 +506,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
         public void SerializeLists()
         {
-            IMessageMapper mapper = new MessageMapper();
+            IMessageMapper mapper = new MessageMapper(null);
             var serializer = SerializerFactory.Create<MessageWithList>();
             var msg = mapper.CreateInstance<MessageWithList>();
 
@@ -526,7 +526,7 @@ namespace NServiceBus.Serializers.XML.Test
 		[Test]
 		public void SerializeClosedGenericListsInAlternateNamespace()
 		{
-			IMessageMapper mapper = new MessageMapper();
+			IMessageMapper mapper = new MessageMapper(null);
 			var serializer = SerializerFactory.Create<MessageWithClosedListInAlternateNamespace>();
 			var msg = mapper.CreateInstance<MessageWithClosedListInAlternateNamespace>();
 
@@ -546,7 +546,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
 		public void SerializeClosedGenericListsInAlternateNamespaceMultipleIEnumerableImplementations()
 		{
-			IMessageMapper mapper = new MessageMapper();
+			IMessageMapper mapper = new MessageMapper(null);
 			var serializer = SerializerFactory.Create<MessageWithClosedListInAlternateNamespaceMultipleIEnumerableImplementations>();
 			var msg = mapper.CreateInstance<MessageWithClosedListInAlternateNamespaceMultipleIEnumerableImplementations>();
 
@@ -566,7 +566,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
 		public void SerializeClosedGenericListsInAlternateNamespaceMultipleIListImplementations()
 		{
-			IMessageMapper mapper = new MessageMapper();
+			IMessageMapper mapper = new MessageMapper(null);
 			var serializer = SerializerFactory.Create<MessageWithClosedListInAlternateNamespaceMultipleIListImplementations>();
 			var msg = mapper.CreateInstance<MessageWithClosedListInAlternateNamespaceMultipleIListImplementations>();
 
@@ -586,7 +586,7 @@ namespace NServiceBus.Serializers.XML.Test
 		[Test]
 		public void SerializeClosedGenericListsInSameNamespace()
 		{
-			IMessageMapper mapper = new MessageMapper();
+			IMessageMapper mapper = new MessageMapper(null);
 			var serializer = SerializerFactory.Create<MessageWithClosedList>();
 			var msg = mapper.CreateInstance<MessageWithClosedList>();
 
@@ -606,7 +606,7 @@ namespace NServiceBus.Serializers.XML.Test
         [Test]
         public void SerializeEmptyLists()
         {
-            IMessageMapper mapper = new MessageMapper();
+            IMessageMapper mapper = new MessageMapper(null);
             var serializer = SerializerFactory.Create<MessageWithList>();
             var msg = mapper.CreateInstance<MessageWithList>();
 

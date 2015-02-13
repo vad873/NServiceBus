@@ -35,7 +35,7 @@ namespace NServiceBus.Unicast.Tests.Contexts
         protected ISendMessages messageSender;
         protected FakeSubscriptionStorage subscriptionStorage;
 
-        protected MessageMapper MessageMapper = new MessageMapper();
+        protected MessageMapper MessageMapper = new MessageMapper(null);
 
         protected FakeTransport Transport;
         protected XmlMessageSerializer MessageSerializer;
@@ -85,7 +85,7 @@ namespace NServiceBus.Unicast.Tests.Contexts
             var conventions = new Conventions();
             handlerRegistry = new MessageHandlerRegistry(conventions);
             MessageMetadataRegistry = new MessageMetadataRegistry(false, conventions);
-            MessageSerializer = new XmlMessageSerializer(MessageMapper, conventions);
+            MessageSerializer = new XmlMessageSerializer(null, MessageMapper, conventions);
 
             messageSender = MockRepository.GenerateStub<ISendMessages>();
             subscriptionStorage = new FakeSubscriptionStorage();

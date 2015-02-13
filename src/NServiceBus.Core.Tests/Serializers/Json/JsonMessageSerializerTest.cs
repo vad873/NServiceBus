@@ -81,7 +81,7 @@ namespace NServiceBus.Serializers.Json.Tests
         [Test]
         public void Deserialize_private_message_with_two_unrelated_interface_without_wrapping()
         {
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(new[] { typeof(IMyEventA), typeof(IMyEventB) });
             Serializer = new JsonMessageSerializer(MessageMapper);
 
@@ -151,7 +151,7 @@ namespace NServiceBus.Serializers.Json.Tests
         [Test]
         public void Serialize_message_without_concrete_implementation()
         {
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(new[] { typeof(ISuperMessageWithoutConcreteImpl) });
             Serializer = new JsonMessageSerializer(MessageMapper);
 
@@ -170,7 +170,7 @@ namespace NServiceBus.Serializers.Json.Tests
         [Test]
         public void Deserialize_message_without_concrete_implementation()
         {
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(new[] { typeof(ISuperMessageWithoutConcreteImpl) });
             Serializer = new JsonMessageSerializer(MessageMapper);
 
@@ -193,7 +193,7 @@ namespace NServiceBus.Serializers.Json.Tests
         public void Deserialize_message_with_concrete_implementation_and_interface()
         {
             var map = new[] {typeof(SuperMessageWithConcreteImpl), typeof(ISuperMessageWithConcreteImpl)};
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(map);
             Serializer = new JsonMessageSerializer(MessageMapper);
 
@@ -289,7 +289,7 @@ namespace NServiceBus.Serializers.Json.Tests
                 streamWriter.Flush();
                 stream.Position = 0;
 
-                MessageMapper = new MessageMapper();
+                MessageMapper = new MessageMapper(null);
                 MessageMapper.Initialize(new[] { typeof(IAImpl), typeof(IA) });
                 Serializer = new JsonMessageSerializer(MessageMapper);
 

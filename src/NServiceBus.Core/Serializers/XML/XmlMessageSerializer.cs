@@ -15,11 +15,16 @@ namespace NServiceBus.Serializers.XML
         /// <summary>
         ///     Initializes an instance of a <see cref="XmlMessageSerializer" />.
         /// </summary>
+        /// <param name="config"></param>
         /// <param name="mapper">Message Mapper</param>
         /// <param name="conventions">The endpoint conventions.</param>
-        public XmlMessageSerializer(IMessageMapper mapper, Conventions conventions)
+        public XmlMessageSerializer(Configure config, IMessageMapper mapper, Conventions conventions)
         {
             this.mapper = mapper;
+
+            var messageTypes = config.TypesToScan.Where(config.Settings.Get<Conventions>().IsMessageType).ToList();
+            Initialize(messageTypes);
+
             this.conventions = conventions;
         }
 

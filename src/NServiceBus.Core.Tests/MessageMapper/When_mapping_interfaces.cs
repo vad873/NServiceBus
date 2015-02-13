@@ -11,7 +11,7 @@ namespace MessageMapperTests
         [Test]
         public void Interfaces_with_only_properties_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(InterfaceWithOnlyProperties) });
 
             Assert.NotNull(mapper.GetMappedTypeFor(typeof(InterfaceWithOnlyProperties)));
@@ -25,7 +25,7 @@ namespace MessageMapperTests
         [Test]
         public void Interface_should_be_created()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(Interface) });
 
             var result = mapper.CreateInstance<Interface>(null);
@@ -40,7 +40,7 @@ namespace MessageMapperTests
         [Test]
         public void Interfaces_with_methods_should_be_ignored()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(InterfaceWithMethods) });
 
             Assert.Null(mapper.GetMappedTypeFor(typeof(InterfaceWithMethods)));
@@ -56,7 +56,7 @@ namespace MessageMapperTests
         [Test]
         public void Attributes_on_properties_should_be_mapped()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[]{typeof(InterfaceWithPropertiesAndAttributes)});
             Assert.IsTrue(PropertyContainsAttribute("SomeProperty",typeof(SomeAttribute),mapper.CreateInstance(typeof(InterfaceWithPropertiesAndAttributes))));
             
@@ -79,7 +79,7 @@ namespace MessageMapperTests
         [Test]
         public void Accept_Attributes_with_no_default_ctor_as_long_as_the_parameter_in_constructor_has_the_same_name_as_the_property()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(InterfaceWithCustomAttributeThatHasNoDefaultConstructor) });
             var instance = mapper.CreateInstance(typeof (InterfaceWithCustomAttributeThatHasNoDefaultConstructor));
             var attributes = instance.GetType().GetProperty("SomeProperty").GetCustomAttributes(typeof(CustomAttributeWithNoDefaultConstructor),true);
@@ -105,7 +105,7 @@ namespace MessageMapperTests
         [Test]
         public void Accept_Attributes_with_no_default_ctor_while_ctor_parameters_are_different_than_properties_of_custom_attribute()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(InterfaceWithCustomAttributeThatHasNoDefaultConstructorAndNoMatchingParameters) });
             var instance = mapper.CreateInstance(typeof(InterfaceWithCustomAttributeThatHasNoDefaultConstructorAndNoMatchingParameters));
             var attributes = instance.GetType().GetProperty("SomeProperty").GetCustomAttributes(typeof(CustomAttributeWithNoDefaultConstructorAndNoMatchingParameters), true);
@@ -135,7 +135,7 @@ namespace MessageMapperTests
         [Test]
         public void Generated_type_should_preserve_namespace_to_make_it_easier_for_users_to_define_custom_conventions()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(InterfaceToGenerate) });
 
             Assert.AreEqual(typeof(InterfaceToGenerate).Namespace, mapper.CreateInstance(typeof(InterfaceToGenerate)).GetType().Namespace);
@@ -149,7 +149,7 @@ namespace MessageMapperTests
         [Test]
         public void Accept_attributes_with_value_attribute()
         {
-            var mapper = new MessageMapper();
+            var mapper = new MessageMapper(null);
             mapper.Initialize(new[] { typeof(IMyEventWithAttributeWithBoolProperty) });
             var instance = mapper.CreateInstance(typeof(IMyEventWithAttributeWithBoolProperty));
             var attributes = instance.GetType().GetProperty("EventId").GetCustomAttributes(typeof(CustomAttributeWithValueProperties), true);

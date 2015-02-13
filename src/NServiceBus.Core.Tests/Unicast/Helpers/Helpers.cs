@@ -36,7 +36,7 @@ namespace NServiceBus.Unicast.Tests.Helpers
 
         public static TransportMessage Serialize<T>(T message, bool nullReplyToAddress = false, MessageMapper mapper = null)
         {
-            var s = new XmlMessageSerializer(mapper ?? new MessageMapper(), new Conventions());
+            var s = new XmlMessageSerializer(null, mapper ?? new MessageMapper(null), new Conventions());
 
             s.Initialize(new[] { typeof(T) });
 

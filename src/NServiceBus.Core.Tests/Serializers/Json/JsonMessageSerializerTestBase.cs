@@ -64,7 +64,7 @@
 
         protected JsonMessageSerializerTestBase(params Type[] messageTypes)
         {
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(new[] { typeof(IA), typeof(A) }.Union(messageTypes));
         }
 
@@ -93,7 +93,7 @@
 
             var output = new MemoryStream();
 
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(new[] { typeof(IA), typeof(A) });
             Serializer = new JsonMessageSerializer(MessageMapper);
 
@@ -141,7 +141,7 @@
 
             new Random().NextBytes(obj.Data);
 
-            MessageMapper = new MessageMapper();
+            MessageMapper = new MessageMapper(null);
             MessageMapper.Initialize(new[] { typeof(IA), typeof(IAImpl) });
             Serializer = new JsonMessageSerializer(MessageMapper);
 

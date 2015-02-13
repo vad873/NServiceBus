@@ -14,14 +14,17 @@ namespace NServiceBus.MessageInterfaces.MessageMapper.Reflection
     /// </summary>
     public class MessageMapper : IMessageMapper
     {
-
         ConcreteProxyCreator concreteProxyCreator;
 
         /// <summary>
         /// Initializes a new instance of <see cref="MessageMapper"/>.
         /// </summary>
-        public MessageMapper()
+        public MessageMapper(Configure config)
         {
+            var messageTypes = config.TypesToScan.Where(config.Settings.Get<Conventions>().IsMessageType).ToList();
+
+            Initialize(messageTypes);
+
             concreteProxyCreator = new ConcreteProxyCreator();
         }
 

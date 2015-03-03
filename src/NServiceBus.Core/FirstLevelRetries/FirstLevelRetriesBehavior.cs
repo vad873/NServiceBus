@@ -11,20 +11,11 @@ namespace NServiceBus
         readonly BusNotifications notifications;
 
         public FirstLevelRetriesBehavior(FirstLevelRetryPolicy retryPolicy, BusNotifications notifications)
-            : this(new FlrStatusStorage(), retryPolicy, notifications)
         {
-        }
-
-        public static FirstLevelRetriesBehavior CreateForTests(FlrStatusStorage storage, FirstLevelRetryPolicy retryPolicy, BusNotifications notifications)
-        {
-            return new FirstLevelRetriesBehavior(storage, retryPolicy, notifications);
-        }
-
-        FirstLevelRetriesBehavior(FlrStatusStorage storage, FirstLevelRetryPolicy retryPolicy, BusNotifications notifications)
-        {
-            this.storage = storage;
             this.retryPolicy = retryPolicy;
             this.notifications = notifications;
+
+            storage = new FlrStatusStorage();
         }
 
         public override void Invoke(Context context, Action next)

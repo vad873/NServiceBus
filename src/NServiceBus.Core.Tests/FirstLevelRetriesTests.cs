@@ -14,7 +14,7 @@
         [Test]
         public void ShouldNotPerformFLROnMessagesThatCantBeDeserialized()
         {
-            var behavior = FirstLevelRetriesBehavior.CreateForTests(null, new FirstLevelRetryPolicy(0), new BusNotifications());
+            var behavior = new FirstLevelRetriesBehavior(new FirstLevelRetryPolicy(0), new BusNotifications());
 
             Assert.Throws<MessageDeserializationException>(() => behavior.Invoke(null, () =>
             {
@@ -25,7 +25,7 @@
         [Test]
         public void ShouldPerformFLRIfThereAreRetriesLeftToDo()
         {
-            var behavior = FirstLevelRetriesBehavior.CreateForTests(new FlrStatusStorage(), new FirstLevelRetryPolicy(1), new BusNotifications());
+            var behavior = new FirstLevelRetriesBehavior(new FirstLevelRetryPolicy(1), new BusNotifications());
             var context = CreateContext("someid");
 
             behavior.Invoke(context, () =>
@@ -39,7 +39,7 @@
         [Test]
         public void ShouldBubbleTheExceptionUpIfThereAreNoMoreRetriesLeft()
         {
-            var behavior = FirstLevelRetriesBehavior.CreateForTests(new FlrStatusStorage(), new FirstLevelRetryPolicy(0), new BusNotifications());
+            var behavior = new FirstLevelRetriesBehavior(new FirstLevelRetryPolicy(0), new BusNotifications());
             var context = CreateContext("someid");
 
             Assert.Throws<Exception>(() => behavior.Invoke(context, () =>
@@ -52,26 +52,9 @@
         }
 
         [Test]
-        public void ShouldClearStorageAfterGivingUp()
-        {
-            var storage = new FlrStatusStorage();
-            var behavior = FirstLevelRetriesBehavior.CreateForTests(storage, new FirstLevelRetryPolicy(1), new BusNotifications());
-
-            storage.IncrementFailuresForMessage("someid", new Exception(""));
-
-            Assert.Throws<Exception>(() => behavior.Invoke(CreateContext("someid"), () =>
-            {
-                throw new Exception("test");
-            }));
-
-
-            Assert.AreEqual(0, storage.GetRetriesForMessage("someid"));
-        }
-        [Test]
         public void ShouldRememberRetryCountBetweenRetries()
         {
-            var storage = new FlrStatusStorage();
-            var behavior = FirstLevelRetriesBehavior.CreateForTests(storage, new FirstLevelRetryPolicy(1), new BusNotifications());
+            var behavior = new FirstLevelRetriesBehavior(new FirstLevelRetryPolicy(1), new BusNotifications());
 
             behavior.Invoke(CreateContext("someid"), () =>
             {
@@ -79,16 +62,32 @@
             });
 
 
-            Assert.AreEqual(1, storage.GetRetriesForMessage("someid"));
+
+            Assert.Throws<Exception>(()=> behavior.Invoke(CreateContext("someid"), () =>
+            {
+                throw new Exception("test");
+            }));
         }
 
+        [Test]
+        public void ShouldClearStorageAfterGivingUp()
+        {
+            var behavior = new FirstLevelRetriesBehavior(new FirstLevelRetryPolicy(1), new BusNotifications());
+
+            behavior.Invoke(CreateContext("someid"), () => { throw new Exception("test"); });
+         
+            //this should clear the storage since we gave up
+            Assert.Throws<Exception>(() => behavior.Invoke(CreateContext("someid"), () =>{throw new Exception("test");}));
+        
+            //so this one should not blow
+            behavior.Invoke(CreateContext("someid"), () => { throw new Exception("test"); });
+        }
 
         [Test]
         public void ShouldRaiseBusNotificationsForFLR()
         {
             var notifications = new BusNotifications();
-            var storage = new FlrStatusStorage();
-            var behavior = FirstLevelRetriesBehavior.CreateForTests(storage, new FirstLevelRetryPolicy(1), notifications);
+            var behavior = new FirstLevelRetriesBehavior(new FirstLevelRetryPolicy(1), notifications);
 
             var notificationFired = false;
 
@@ -109,6 +108,8 @@
 
             Assert.True(notificationFired);
         }
+
+
         PhysicalMessageProcessingStageBehavior.Context CreateContext(string messageId)
         {
             var context = new PhysicalMessageProcessingStageBehavior.Context(new TransportReceiveContext(new ReceivedMessage(messageId, new Dictionary<string, string>(), new MemoryStream()), null));

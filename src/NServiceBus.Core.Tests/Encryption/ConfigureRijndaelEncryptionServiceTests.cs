@@ -116,7 +116,7 @@
         {
             var config = new RijndaelEncryptionServiceConfig();
             var exception = Assert.Throws<Exception>(() => ConfigureRijndaelEncryptionService.ConvertConfigToRijndaelService(config));
-            Assert.AreEqual("The RijndaelEncryptionServiceConfig has an empty a 'Key' property.", exception.Message);
+            Assert.AreEqual("The RijndaelEncryptionServiceConfig has an empty 'Key' property.", exception.Message);
         }
 
         [Test]
@@ -127,7 +127,7 @@
                 Key = " "
             };
             var exception = Assert.Throws<Exception>(() => ConfigureRijndaelEncryptionService.ConvertConfigToRijndaelService(config));
-            Assert.AreEqual("The RijndaelEncryptionServiceConfig has an empty a 'Key' property.", exception.Message);
+            Assert.AreEqual("The RijndaelEncryptionServiceConfig has an empty 'Key' property.", exception.Message);
         }
 
         [Test]

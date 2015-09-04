@@ -38,7 +38,7 @@ namespace NServiceBus.Encryption.Rijndael
 
         public RijndaelEncryptionService(string encryptionKeyIdentifier, Dictionary<string, byte[]> keys)
         {
-            if (!keys.ContainsKey(encryptionKeyIdentifier)) throw new ArgumentException("Invalid encryption key identifier", "encryptionKeyIdentifier");
+            if (!keys.ContainsKey(encryptionKeyIdentifier)) throw new ArgumentException("Invalid encryption key identifier.", "encryptionKeyIdentifier");
 
             EncryptionKeyIdentifier = encryptionKeyIdentifier;
             this.keys = keys;
@@ -117,10 +117,17 @@ namespace NServiceBus.Encryption.Rijndael
 
             if (!keys.TryGetValue(keyIdentifier, out key))
             {
-                throw new ArgumentException("Invalid decryption key identifier", "keyIdentifier");
+                throw new ArgumentException("Invalid decryption key identifier.", "keyIdentifier");
             }
 
-            return Decrypt(encryptedValue, key);
+            try
+            {
+                return Decrypt(encryptedValue, key);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new InvalidOperationException("Decryption failed for specific key identifier.", ex);
+            }
         }
 
         public string EncryptionKeyIdentifier { get; private set; }

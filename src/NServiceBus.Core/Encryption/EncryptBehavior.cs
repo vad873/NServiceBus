@@ -23,8 +23,10 @@
                 return;
             }
 
+
             var currentMessageToSend = context.OutgoingLogicalMessage.Instance;
             currentMessageToSend = messageMutator.MutateOutgoing(currentMessageToSend);
+            context.OutgoingLogicalMessage.Headers[Headers.EncryptionKeyIdentifier] = messageMutator.EncryptionKeyIdentifier;
             context.OutgoingLogicalMessage.UpdateMessageInstance(currentMessageToSend);
             next();
         }

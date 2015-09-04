@@ -215,6 +215,10 @@
         public const string MessageIntent = "NServiceBus.MessageIntent";
 
         /// <summary>
+        /// Identifies how data is encrypted.
+        /// </summary>
+        public const string EncryptionKeyIdentifier = "NServiceBus.EncryptionKeyIdentifier";
+        /// <summary>
         /// Get the header with the given key. Cannot be used to change its value.
         /// </summary>
         /// <param name="msg">The message to retrieve a header from.</param>

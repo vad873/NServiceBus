@@ -14,6 +14,20 @@ namespace NServiceBus.Encryption
         IEncryptionService encryptionService;
         Conventions conventions;
 
+        public string EncryptionKeyIdentifier
+        {
+            get
+            {
+                var x = encryptionService as IEncryptionServiceInternal;
+
+                if (x != null) return x.EncryptionKeyIdentifier;
+
+                return null;
+            }
+        }
+
+        public string DecryptionKeyIdentifier { private get; set; }
+
         public EncryptionMutator(IEncryptionService encryptionService, Conventions conventions)
         {
             this.encryptionService = encryptionService;
@@ -101,7 +115,7 @@ namespace NServiceBus.Encryption
                 {
                     continue;
                 }
-                
+
                 var child = member.GetValue(root);
 
                 var items = child as IEnumerable;
@@ -190,11 +204,13 @@ namespace NServiceBus.Encryption
 
             var parts = stringToDecrypt.Split(new[] { '@' }, StringSplitOptions.None);
 
-            return encryptionService.Decrypt(new EncryptedValue
+            var value = new EncryptedValue
             {
                 EncryptedBase64Value = parts[0],
                 Base64Iv = parts[1]
-            });
+            };
+
+            return DecryptValue(value);
         }
 
         void Decrypt(WireEncryptedString encryptedValue)
@@ -260,6 +276,16 @@ namespace NServiceBus.Encryption
             }
 
             return members;
+        }
+
+        string DecryptValue(EncryptedValue value)
+        {
+            var x = encryptionService as IEncryptionServiceInternal;
+
+            if (x != null && DecryptionKeyIdentifier != null)
+                return x.Decrypt(value, DecryptionKeyIdentifier);
+
+            return encryptionService.Decrypt(value);
         }
 
         HashSet<object> visitedMembers = new HashSet<object>();

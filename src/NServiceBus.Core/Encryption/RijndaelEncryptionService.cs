@@ -29,50 +29,20 @@ namespace NServiceBus.Encryption.Rijndael
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Security.Cryptography;
-    using System.Text;
 
-    class RijndaelEncryptionService : IEncryptionService
+    class RijndaelEncryptionService : IEncryptionServiceInternal
     {
+        readonly byte[] encryptionKey;
+        readonly Dictionary<string, byte[]> keys;
 
-        byte[] encryptionKey;
-        List<byte[]> decryptionKeys;
-
-        public RijndaelEncryptionService(string encryptionKey, List<string> expiredKeys)
+        public RijndaelEncryptionService(string encryptionKeyIdentifier, Dictionary<string, byte[]> keys)
         {
-            this.encryptionKey = Encoding.ASCII.GetBytes(encryptionKey);
-            VerifyEncryptionKey(this.encryptionKey);
-            var expiredKeyBytes = expiredKeys.Select(key => Encoding.ASCII.GetBytes(key)).ToList();
-            VerifyExpiredKeys(expiredKeyBytes);
-            VerifyKeysAreNotTooSimilar(expiredKeyBytes);
+            if (!keys.ContainsKey(encryptionKeyIdentifier)) throw new ArgumentException("Invalid encryption key identifier", "encryptionKeyIdentifier");
 
-            decryptionKeys = new List<byte[]>{this.encryptionKey};
-            decryptionKeys.AddRange(expiredKeyBytes);
-
-        }
-
-        void VerifyKeysAreNotTooSimilar(List<byte[]> expiredKeyBytes)
-        {
-            for (var index = 0; index < expiredKeyBytes.Count; index++)
-            {
-                var decryption = expiredKeyBytes[index];
-                CryptographicException exception = null;
-                var encryptedValue = Encrypt("a");
-                try
-                {
-                    Decrypt(encryptedValue, decryption);
-                }
-                catch (CryptographicException cryptographicException)
-                {
-                    exception = cryptographicException;
-                }
-                if (exception == null)
-                {
-                    var message = string.Format("The new Encryption Key is too similar to the Expired Key at index {0}. This can cause issues when decrypting data. To fix this issue please ensure the new encryption key is not too similar to the existing Expired Keys.", index);
-                    throw new Exception(message);
-                }
-            }
+            EncryptionKeyIdentifier = encryptionKeyIdentifier;
+            this.keys = keys;
+            encryptionKey = keys[EncryptionKeyIdentifier];
         }
 
 
@@ -80,18 +50,18 @@ namespace NServiceBus.Encryption.Rijndael
         {
             var cryptographicExceptions = new List<CryptographicException>();
 
-            foreach (var key in decryptionKeys)
+            foreach (var key in keys)
             {
                 try
                 {
-                    return Decrypt(encryptedValue, key);
+                    return Decrypt(encryptedValue, key.Value);
                 }
                 catch (CryptographicException exception)
                 {
                     cryptographicExceptions.Add(exception);
                 }
             }
-            var message = string.Format("Could not decrypt message. Tried {0} keys.", decryptionKeys.Count);
+            var message = string.Format("Could not decrypt message. Tried {0} keys.", keys.Count);
             throw new AggregateException(message, cryptographicExceptions);
         }
 
@@ -139,37 +109,20 @@ namespace NServiceBus.Encryption.Rijndael
             }
         }
 
-        static void VerifyExpiredKeys(List<byte[]> keys)
+        public string Decrypt(EncryptedValue encryptedValue, string keyIdentifier)
         {
-            for (var index = 0; index < keys.Count; index++)
+            if (keyIdentifier == null) throw new ArgumentNullException("keyIdentifier");
+
+            byte[] key;
+
+            if (!keys.TryGetValue(keyIdentifier, out key))
             {
-                var key = keys[index];
-                if (IsValidKey(key))
-                {
-                    continue;
-                }
-                var message = string.Format("The expired key at index {0} has an invalid length of {1} bytes.", index, key.Length);
-                throw new Exception(message);
+                throw new ArgumentException("Invalid decryption key identifier", "keyIdentifier");
             }
+
+            return Decrypt(encryptedValue, key);
         }
 
-        static void VerifyEncryptionKey(byte[] key)
-        {
-            if (IsValidKey(key))
-            {
-                return;
-            }
-            var message = string.Format("The encryption key has an invalid length of {0} bytes.", key.Length);
-            throw new Exception(message);
-        }
-
-        static bool IsValidKey(byte[] key)
-        {
-            using (var rijndael = new RijndaelManaged())
-            {
-                var bitLength = key.Length*8;
-                return rijndael.ValidKeySize(bitLength);
-            }
-        }
+        public string EncryptionKeyIdentifier { get; private set; }
     }
 }

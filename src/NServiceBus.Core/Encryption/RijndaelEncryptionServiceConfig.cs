@@ -39,5 +39,20 @@ namespace NServiceBus.Config
             }
         }
 
+        /// <summary>
+        /// Identifies the data format of the encryption keys.
+        /// </summary>
+        [ConfigurationProperty("KeyFormat", DefaultValue = KeyFormat.Ascii)]
+        public KeyFormat KeyFormat
+        {
+            get
+            {
+                return (KeyFormat)this["KeyFormat"];
+            }
+            set
+            {
+                this["KeyFormat"] = value;
+            }
+        }
     }
 }

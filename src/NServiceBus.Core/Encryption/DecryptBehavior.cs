@@ -21,7 +21,13 @@ namespace NServiceBus
                 next();
                 return;
             }
+
+            string keyIdentifier;
+
+            context.IncomingLogicalMessage.Headers.TryGetValue(Headers.EncryptionKeyIdentifier, out keyIdentifier);
+
             var current = context.IncomingLogicalMessage.Instance;
+            messageMutator.DecryptionKeyIdentifier = keyIdentifier;
             current = messageMutator.MutateIncoming(current);
             context.IncomingLogicalMessage.UpdateMessageInstance(current);
             next();

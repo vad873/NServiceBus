@@ -15,7 +15,7 @@
         [Test]
         public void Should_not_throw_for_empty_keys()
         {
-            ConfigureRijndaelEncryptionService.VerifyKeys(new List<string>());
+            ConfigureRijndaelEncryptionService.VerifyKeys(new List<string>(), KeyFormat.Ascii);
         }
 
         [Test]
@@ -39,15 +39,15 @@
 
             var section = ReadSectionFromText<RijndaelEncryptionServiceConfig>(xml);
             var keys = section.ExpiredKeys.Cast<RijndaelExpiredKey>()
-                .Select(x=>x.Key)
+                .Select(x => x.Key)
                 .ToList();
             Assert.AreEqual("key1", section.Key);
-            Assert.AreEqual(2,keys.Count);
-            Assert.Contains("key2",keys);
-            Assert.Contains("key3",keys);
+            Assert.AreEqual(2, keys.Count);
+            Assert.Contains("key2", keys);
+            Assert.Contains("key3", keys);
         }
 
-        static T ReadSectionFromText<T>(string s) where T: ConfigurationSection
+        static T ReadSectionFromText<T>(string s) where T : ConfigurationSection
         {
             var xml = s.Replace("'", "\"");
             var tempPath = Path.GetTempFileName();
@@ -61,7 +61,7 @@
                 };
 
                 var configuration = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
-                return (T) configuration.GetSection(typeof(T).Name);
+                return (T)configuration.GetSection(typeof(T).Name);
             }
             finally
             {
@@ -81,7 +81,7 @@
                 "key2",
                 "key1"
             };
-            var exception = Assert.Throws<ArgumentException>(() => ConfigureRijndaelEncryptionService.VerifyKeys(keys));
+            var exception = Assert.Throws<ArgumentException>(() => ConfigureRijndaelEncryptionService.VerifyKeys(keys, KeyFormat.Ascii));
             Assert.AreEqual("Overlapping keys defined. Please ensure that no keys overlap.\r\nParameter name: expiredKeys", exception.Message);
         }
 
@@ -90,12 +90,12 @@
         {
             var keys = new List<string>
             {
-                "key1",
+                "key1abcdefghijkl", // 16 bytes
                 "",
-                "key2"
+                "key2abcdefghijkl"
             };
-            var exception = Assert.Throws<ArgumentException>(() => ConfigureRijndaelEncryptionService.VerifyKeys(keys));
-            Assert.AreEqual("Empty encryption key detected in position 1.\r\nParameter name: expiredKeys", exception.Message);
+            var exception = Assert.Throws<ArgumentException>(() => ConfigureRijndaelEncryptionService.VerifyKeys(keys, KeyFormat.Ascii));
+            Assert.AreEqual("Empty expired key detected in position 1.\r\nParameter name: expiredKeys", exception.Message);
         }
 
         [Test]
@@ -103,12 +103,12 @@
         {
             var keys = new List<string>
             {
-                "key1",
+                "key1abcdefghijkl", // 16 bytes
                 null,
-                "key2"
+                "key2abcdefghijkl"
             };
-            var exception = Assert.Throws<ArgumentException>(() => ConfigureRijndaelEncryptionService.VerifyKeys(keys));
-            Assert.AreEqual("Empty encryption key detected in position 1.\r\nParameter name: expiredKeys", exception.Message);
+            var exception = Assert.Throws<ArgumentException>(() => ConfigureRijndaelEncryptionService.VerifyKeys(keys, KeyFormat.Ascii));
+            Assert.AreEqual("Empty expired key detected in position 1.\r\nParameter name: expiredKeys", exception.Message);
         }
 
         [Test]
@@ -198,8 +198,30 @@
             };
             var keys = ConfigureRijndaelEncryptionService.ExtractExpiredKeysFromConfigSection(config);
 
-            Assert.That(new[]{"a"}, Is.EquivalentTo(keys));
+            Assert.That(new[] { "a" }, Is.EquivalentTo(keys));
         }
-    }
 
+
+        //[Test]
+        //public void Should_throw_when_encrypt_and_decrypt_keys_are_too_similar()
+        //{
+        //    var exception = Assert.Throws<Exception>(() => new RijndaelEncryptionService("gdDbqRpqdRbTs3mhdZh9qCaDaxJXl+e6", new List<string> { "gdDbqRpqdRbTs3mhdZh9qCaDaxJXl+e6" }));
+        //    Assert.AreEqual("The new Encryption Key is too similar to the Expired Key at index 0. This can cause issues when decrypting data. To fix this issue please ensure the new encryption key is not too similar to the existing Expired Keys.", exception.Message);
+        //}
+
+        //[Test]
+        //public void Should_throw_for_invalid_key()
+        //{
+        //    var exception = Assert.Throws<Exception>(() => new RijndaelEncryptionService("invalidKey", new List<string>()));
+        //    Assert.AreEqual("The encryption key has an invalid length of 10 bytes.", exception.Message);
+        //}
+
+        //[Test]
+        //public void Should_throw_for_invalid_expired_key()
+        //{
+        //    var expiredKeys = new List<string> { "invalidKey" };
+        //    var exception = Assert.Throws<Exception>(() => new RijndaelEncryptionService("adDbqRpqdRbTs3mhdZh9qCaDaxJXl+e6", expiredKeys));
+        //    Assert.AreEqual("The expired key at index 0 has an invalid length of 10 bytes.", exception.Message);
+        //}
+    }
 }

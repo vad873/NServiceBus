@@ -73,6 +73,9 @@ namespace NServiceBus.Encryption.Rijndael
                 rijndael.IV = Convert.FromBase64String(encryptedValue.Base64Iv);
                 rijndael.Mode = CipherMode.CBC;
                 rijndael.Key = key;
+
+                Console.WriteLine("IV: {0}", Convert.ToBase64String(rijndael.IV));
+
                 using (var decryptor = rijndael.CreateDecryptor())
                 using (var memoryStream = new MemoryStream(encrypted))
                 using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))

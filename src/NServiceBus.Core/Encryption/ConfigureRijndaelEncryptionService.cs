@@ -175,11 +175,7 @@ namespace NServiceBus
             var keys = expiredKeys.ToDictionary(GetKeyIdentifier, x => x);
             var encryptionKeyIdentifier = GetKeyIdentifier(encryptionKey);
             keys.Add(encryptionKeyIdentifier, encryptionKey);
-
-            var instance = new RijndaelEncryptionService(encryptionKeyIdentifier, keys);
-
-            VerifyKeysAreNotTooSimilar(expiredKeys, instance);
-            return instance;
+            return new RijndaelEncryptionService(encryptionKeyIdentifier, keys);
         }
 
 
@@ -208,27 +204,6 @@ namespace NServiceBus
             using (var algo = new SHA256Managed()) // SHA256Man.Create() is *slower*
             {
                 return algo.ComputeHash(data, 0, data.Length);
-            }
-        }
-
-        static void VerifyKeysAreNotTooSimilar(List<byte[]> expiredKeyBytes, RijndaelEncryptionService instance)
-        {
-            for (var index = 0; index < expiredKeyBytes.Count; index++)
-            {
-                var decryption = expiredKeyBytes[index];
-                var encryptedValue = instance.Encrypt("a");
-                try
-                {
-                    var keyIdentifier = GetKeyIdentifier(decryption);
-                    instance.Decrypt(encryptedValue, keyIdentifier);
-
-                    var message = string.Format("The new Encryption Key is too similar to the Expired Key at index {0}. This can cause issues when decrypting data. To fix this issue please ensure the new encryption key is not too similar to the existing Expired Keys by creating a real secure randomized key.", index);
-                    throw new Exception(message);
-                }
-                catch (CryptographicException)
-                {
-                    continue; // We are good, not similar
-                }
             }
         }
 

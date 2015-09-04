@@ -41,7 +41,7 @@ namespace NServiceBus
                 throw new Exception("The RijndaelEncryptionServiceConfig has an empty 'Key' property.");
             }
 
-            if (IsValidKey(section.Key, section.KeyFormat))
+            if (!IsValidKey(section.Key, section.KeyFormat))
             {
                 throw new Exception("Invalid 'Key' value.");
             }

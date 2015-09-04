@@ -195,8 +195,7 @@ namespace NServiceBus
         static string GetKeyIdentifier(byte[] key)
         {
             var hash = GetHash(key);
-            var range = hash.Length / 2;
-            return Convert.ToBase64String(hash, 0, range);
+            return Convert.ToBase64String(hash, 0, 4); // Key is 16, 24 or 32 bytes. Grabbing the 1/4, 1/6, or 1/8 of the hash.
         }
 
         static byte[] GetHash(byte[] data)

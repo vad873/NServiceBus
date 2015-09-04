@@ -172,9 +172,19 @@ namespace NServiceBus
 
         static RijndaelEncryptionService BuildRijndaelEncryptionService(byte[] encryptionKey, List<byte[]> expiredKeys)
         {
-            var keys = expiredKeys.ToDictionary(GetKeyIdentifier, x => x);
-            var encryptionKeyIdentifier = GetKeyIdentifier(encryptionKey);
-            keys.Add(encryptionKeyIdentifier, encryptionKey);
+            IDictionary<string, byte[]> keys;
+            string encryptionKeyIdentifier;
+
+            try
+            {
+                keys = expiredKeys.ToDictionary(GetKeyIdentifier, x => x);
+                encryptionKeyIdentifier = GetKeyIdentifier(encryptionKey);
+                keys.Add(encryptionKeyIdentifier, encryptionKey);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidOperationException("Encryption/decryption key identification generated resulted in duplicate identifiers.", ex);
+            }
             return new RijndaelEncryptionService(encryptionKeyIdentifier, keys);
         }
 

@@ -286,6 +286,26 @@ namespace NServiceBus
         InstancePerUnitOfWork = 1,
         InstancePerCall = 2,
     }
+    public class DevelopmentTransport : NServiceBus.Transports.TransportDefinition
+    {
+        public DevelopmentTransport() { }
+        public override string ExampleConnectionStringForErrorMessage { get; }
+        public override bool RequiresConnectionString { get; }
+        public override NServiceBus.Routing.EndpointInstance BindToLocalEndpoint(NServiceBus.Routing.EndpointInstance instance, NServiceBus.Settings.ReadOnlySettings settings) { }
+        protected internal override NServiceBus.Transports.TransportReceivingConfigurationResult ConfigureForReceiving(NServiceBus.Transports.TransportReceivingConfigurationContext context) { }
+        protected internal override NServiceBus.Transports.TransportSendingConfigurationResult ConfigureForSending(NServiceBus.Transports.TransportSendingConfigurationContext context) { }
+        public override NServiceBus.Transports.OutboundRoutingPolicy GetOutboundRoutingPolicy(NServiceBus.Settings.ReadOnlySettings settings) { }
+        public override NServiceBus.Transports.IManageSubscriptions GetSubscriptionManager() { }
+        public override System.Collections.Generic.IEnumerable<System.Type> GetSupportedDeliveryConstraints() { }
+        public override NServiceBus.TransportTransactionMode GetSupportedTransactionMode() { }
+        public override string ToTransportAddress(NServiceBus.LogicalAddress logicalAddress) { }
+    }
+    public class DevelopmentTransportHeader
+    {
+        public DevelopmentTransportHeader() { }
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
     public class static DurableMessagesConfig
     {
         public static void DisableDurableMessages(this NServiceBus.EndpointConfiguration config) { }

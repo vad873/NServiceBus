@@ -10,11 +10,11 @@ namespace NServiceBus.Pipeline.Contexts
     class InvokeHandlerContextImpl : IncomingContextImpl, InvokeHandlerContext
     {
         internal InvokeHandlerContextImpl(MessageHandler handler, SynchronizedStorageSession storageSession, IncomingLogicalMessageContext parentContext)
-            : this(handler, parentContext.MessageId, parentContext.ReplyToAddress, parentContext.Headers, parentContext.Message.Metadata, parentContext.Message.Instance, storageSession, parentContext)
+            : this(handler, parentContext.MessageId, parentContext.ReplyToAddress, parentContext.MessageHeaders, parentContext.Message.Metadata, parentContext.Message.Instance, storageSession, parentContext)
         {
         }
 
-        public InvokeHandlerContextImpl(MessageHandler handler, string messageId, string replyToAddress, Dictionary<string, string> headers, MessageMetadata messageMetadata, object messageBeingHandled, SynchronizedStorageSession storageSession, BehaviorContext parentContext)
+        public InvokeHandlerContextImpl(MessageHandler handler, string messageId, string replyToAddress, IReadOnlyDictionary<string, string> headers, MessageMetadata messageMetadata, object messageBeingHandled, SynchronizedStorageSession storageSession, BehaviorContext parentContext)
             : base(messageId, replyToAddress, headers, parentContext)
         {
             MessageHandler = handler;

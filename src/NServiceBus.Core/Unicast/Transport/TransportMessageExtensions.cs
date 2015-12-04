@@ -4,7 +4,7 @@ namespace NServiceBus.Unicast.Transport
 
     static class TransportMessageExtensions
     {
-        public static bool IsControlMessage(IDictionary<string, string> headers)
+        public static bool IsControlMessage(IReadOnlyDictionary<string, string> headers)
         {
             return headers.ContainsKey(Headers.ControlMessageHeader);
         }

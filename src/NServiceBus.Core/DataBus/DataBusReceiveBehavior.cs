@@ -37,7 +37,7 @@
 
                 string dataBusKey;
 
-                if (!context.Headers.TryGetValue("NServiceBus.DataBus." + headerKey, out dataBusKey))
+                if (!context.MessageHeaders.TryGetValue("NServiceBus.DataBus." + headerKey, out dataBusKey))
                 {
                     continue;
                 }

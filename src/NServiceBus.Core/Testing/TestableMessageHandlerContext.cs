@@ -8,7 +8,7 @@
     using NServiceBus.Persistence;
 
     /// <summary>
-    /// A testable implementation of <see cref="IMessageHandlerContext"/>
+    /// A testable implementation of <see cref="IMessageHandlerContext"/>.
     /// </summary>
     public class TestableMessageHandlerContext : IMessageHandlerContext
     {

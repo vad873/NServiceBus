@@ -77,10 +77,7 @@
                 .OrderByDescending(PlaceInMessageHierarchy)
                 .ToList();
 
-            var metadata = new MessageMetadata(messageType, new[]
-            {
-                messageType
-            }.Concat(parentMessages));
+            var metadata = new MessageMetadata(messageType, parentMessages);
 
             messages[messageType.TypeHandle] = metadata;
 

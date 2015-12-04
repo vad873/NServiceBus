@@ -6,6 +6,7 @@
     using System.Transactions;
     using NServiceBus.Pipeline.Contexts;
     using NServiceBus.Sagas;
+    using NServiceBus.Testing;
     using NServiceBus.Unicast.Behaviors;
     using NUnit.Framework;
     using Conventions = NServiceBus.Conventions;
@@ -139,19 +140,12 @@
             return messageHandler;
         }
 
-        static InvokeHandlerContext CreateBehaviorContext(MessageHandler messageHandler)
+        static TestableInvokeHandlerContext CreateBehaviorContext(MessageHandler messageHandler)
         {
-            var behaviorContext = new InvokeHandlerContextImpl(
-                messageHandler,
-                "messageId",
-                "replyToAddress",
-                new Dictionary<string, string>(),
-                null,
-                null,
-                null,
-                new RootContext(null));
-
-            return behaviorContext;
+            return new TestableInvokeHandlerContext
+            {
+                MessageHandler = messageHandler
+            };
         }
 
         class FakeSaga : Saga<FakeSaga.FakeSagaData>, IAmStartedByMessages<StartMessage>

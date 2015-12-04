@@ -18,7 +18,6 @@ namespace NServiceBus.Pipeline.Contexts
             : base(messageId, replyToAddress, headers, parentContext)
         {
             MessageHandler = handler;
-            Headers = headers;
             MessageBeingHandled = messageBeingHandled;
             MessageMetadata = messageMetadata;
             Set(storageSession);
@@ -27,8 +26,6 @@ namespace NServiceBus.Pipeline.Contexts
         public MessageHandler MessageHandler { get; }
 
         public SynchronizedStorageSession SynchronizedStorageSession => Get<SynchronizedStorageSession>();
-
-        public Dictionary<string, string> Headers { get; }
 
         public object MessageBeingHandled { get; }
 

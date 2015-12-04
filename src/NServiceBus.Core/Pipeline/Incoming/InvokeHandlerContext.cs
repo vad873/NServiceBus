@@ -1,6 +1,5 @@
 namespace NServiceBus.Pipeline.Contexts
 {
-    using System.Collections.Generic;
     using NServiceBus.Unicast.Behaviors;
     using NServiceBus.Unicast.Messages;
 
@@ -13,11 +12,6 @@ namespace NServiceBus.Pipeline.Contexts
         /// The current <see cref="IHandleMessages{T}" /> being executed.
         /// </summary>
         MessageHandler MessageHandler { get; }
-
-        /// <summary>
-        /// Message headers.
-        /// </summary>
-        Dictionary<string, string> Headers { get; }
 
         /// <summary>
         /// The message instance being handled.

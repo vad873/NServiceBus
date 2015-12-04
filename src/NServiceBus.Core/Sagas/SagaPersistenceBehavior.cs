@@ -23,10 +23,6 @@
 
         public override async Task Invoke(InvokeHandlerContext context, Func<Task> next)
         {
-            currentContext = context;
-
-            RemoveSagaHeadersIfProcessingAEvent(context);
-
             var saga = context.MessageHandler.Instance as Saga;
 
             if (saga == null)
@@ -56,7 +52,7 @@
                     sagaInstanceState.MarkAsNotFound();
 
                     //we don't invoke not found handlers for timeouts
-                    if (IsTimeoutMessage(context.Headers))
+                    if (IsTimeoutMessage(context.MessageHeaders))
                     {
                         context.Extensions.Get<SagaInvocationResult>().SagaFound();
                         logger.InfoFormat("No saga found for timeout message {0}, ignoring since the saga has been marked as complete before the timeout fired", context.MessageId);
@@ -116,29 +112,12 @@
                 }
             }
         }
-
-        static void RemoveSagaHeadersIfProcessingAEvent(InvokeHandlerContext context)
-        {
-            // We need this for backwards compatibility because in v4.0.0 we still have this headers being sent as part of the message even if MessageIntent == MessageIntentEnum.Publish
-            string messageIntentString;
-            if (context.Headers.TryGetValue(Headers.MessageIntent, out messageIntentString))
-            {
-                MessageIntentEnum messageIntent;
-
-                if (Enum.TryParse(messageIntentString, true, out messageIntent) && messageIntent == MessageIntentEnum.Publish)
-                {
-                    context.Headers.Remove(Headers.SagaId);
-                    context.Headers.Remove(Headers.SagaType);
-                }
-            }
-        }
-
         static bool IsMessageAllowedToStartTheSaga(InvokeHandlerContext context, SagaMetadata sagaMetadata)
         {
             string sagaType;
 
-            if (context.Headers.ContainsKey(Headers.SagaId) &&
-                context.Headers.TryGetValue(Headers.SagaType, out sagaType))
+            if (context.MessageHeaders.ContainsKey(Headers.SagaId) &&
+                context.MessageHeaders.TryGetValue(Headers.SagaType, out sagaType))
             {
                 //we want to move away from the assembly fully qualified name since that will break if you move sagas
                 // between assemblies. We use the fullname instead which is enough to identify the saga
@@ -152,7 +131,7 @@
             return context.MessageMetadata.MessageHierarchy.Any(messageType => sagaMetadata.IsMessageAllowedToStartTheSaga(messageType.FullName));
         }
 
-        static bool IsTimeoutMessage(Dictionary<string, string> headers)
+        static bool IsTimeoutMessage(IReadOnlyDictionary<string, string> headers)
         {
             string isSagaTimeout;
 
@@ -199,7 +178,6 @@
                 return false;
             }
 
-            headers[Headers.IsSagaTimeoutMessage] = bool.TrueString;
             return true;
         }
 
@@ -207,7 +185,7 @@
         {
             string sagaId;
 
-            if (context.Headers.TryGetValue(Headers.SagaId, out sagaId) && !string.IsNullOrEmpty(sagaId))
+            if (context.MessageHeaders.TryGetValue(Headers.SagaId, out sagaId) && !string.IsNullOrEmpty(sagaId))
             {
                 var sagaEntityType = metadata.SagaEntityType;
 
@@ -236,9 +214,9 @@
             }
 
             var finderType = finderDefinition.Type;
-            var finder = (SagaFinder) currentContext.Builder.Build(finderType);
+            var finder = (SagaFinder)context.Builder.Build(finderType);
 
-            return finder.Find(currentContext.Builder, finderDefinition, context.SynchronizedStorageSession, context.Extensions, context.MessageBeingHandled);
+            return finder.Find(context.Builder, finderDefinition, context.SynchronizedStorageSession, context.Extensions, context.MessageBeingHandled);
         }
 
         IContainSagaData CreateNewSagaEntity(SagaMetadata metadata, InvokeHandlerContext context)
@@ -252,7 +230,7 @@
 
             string replyToAddress;
 
-            if (context.Headers.TryGetValue(Headers.ReplyToAddress, out replyToAddress))
+            if (context.MessageHeaders.TryGetValue(Headers.ReplyToAddress, out replyToAddress))
             {
                 sagaEntity.Originator = replyToAddress;
             }
@@ -274,7 +252,6 @@
             return sagaEntity;
         }
 
-        InvokeHandlerContext currentContext;
         SagaMetadataCollection sagaMetadataCollection;
 
         ISagaPersister sagaPersister;

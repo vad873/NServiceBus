@@ -2047,7 +2047,6 @@ namespace NServiceBus.Pipeline.Contexts
     {
         bool HandleCurrentMessageLaterWasCalled { get; }
         bool HandlerInvocationAborted { get; }
-        System.Collections.Generic.Dictionary<string, string> Headers { get; }
         object MessageBeingHandled { get; }
         NServiceBus.Unicast.Behaviors.MessageHandler MessageHandler { get; }
         NServiceBus.Unicast.Messages.MessageMetadata MessageMetadata { get; }

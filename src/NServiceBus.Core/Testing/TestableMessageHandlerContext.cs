@@ -20,7 +20,7 @@
         /// <summary>
         /// The Id of the currently processed message.
         /// </summary>
-        public string MessageId { get; } = Guid.NewGuid().ToString();
+        public string MessageId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// The address of the endpoint that sent the current message being handled.

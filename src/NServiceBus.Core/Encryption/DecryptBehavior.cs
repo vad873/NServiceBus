@@ -17,7 +17,7 @@ namespace NServiceBus
         }
         public override async Task Invoke(IncomingLogicalMessageContext context, Func<Task> next)
         {
-            if (TransportMessageExtensions.IsControlMessage(context.MessageHeaders))
+            if (TransportMessageExtensions.IsControlMessage(context.Headers))
             {
                 await next().ConfigureAwait(false);
                 return;

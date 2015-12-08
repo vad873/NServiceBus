@@ -4,9 +4,9 @@ namespace NServiceBus
     using System.Threading.Tasks;
     using NServiceBus.Pipeline;
 
-    class RemoveSagaHeadersFromEventsBehavior : Behavior<PhysicalMessageProcessingContext>
+    class RemoveSagaHeadersFromEventsBehavior : Behavior<IncomingPhysicalMessageContext>
     {
-        public override Task Invoke(PhysicalMessageProcessingContext context, Func<Task> next)
+        public override Task Invoke(IncomingPhysicalMessageContext context, Func<Task> next)
         {
             // We need this for backwards compatibility because in v4.0.0 we still have this headers being sent as part of the message even if MessageIntent == MessageIntentEnum.Publish
             string messageIntentString;

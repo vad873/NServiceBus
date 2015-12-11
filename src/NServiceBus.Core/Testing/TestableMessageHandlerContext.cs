@@ -30,7 +30,12 @@
         /// <summary>
         /// Gets the list of key/value pairs found in the header of the message.
         /// </summary>
-        public IReadOnlyDictionary<string, string> MessageHeaders { get; set; } = new Dictionary<string, string>();
+        IReadOnlyDictionary<string, string> IMessageProcessingContext.MessageHeaders => MessageHeaders;
+
+        /// <summary>
+        /// Gets the list of key/value pairs found in the header of the message.
+        /// </summary>
+        public Dictionary<string, string> MessageHeaders { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Sends the provided message.

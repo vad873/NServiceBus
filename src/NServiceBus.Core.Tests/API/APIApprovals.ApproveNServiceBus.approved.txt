@@ -2485,7 +2485,7 @@ namespace NServiceBus.Testing
         public bool DoNotContinueDispatchingCurrentMessageToHandlersCalled { get; }
         public NServiceBus.Extensibility.ContextBag Extensions { get; }
         public bool HandleCurrentMessageLaterCalled { get; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, string> MessageHeaders { get; set; }
+        public System.Collections.Generic.Dictionary<string, string> MessageHeaders { get; set; }
         public string MessageId { get; set; }
         public string ReplyToAddress { get; set; }
         public NServiceBus.Persistence.SynchronizedStorageSession SynchronizedStorageSession { get; }

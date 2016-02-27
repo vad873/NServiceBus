@@ -291,14 +291,7 @@ namespace NServiceBus
         public DevelopmentTransport() { }
         public override string ExampleConnectionStringForErrorMessage { get; }
         public override bool RequiresConnectionString { get; }
-        public override NServiceBus.Routing.EndpointInstance BindToLocalEndpoint(NServiceBus.Routing.EndpointInstance instance, NServiceBus.Settings.ReadOnlySettings settings) { }
-        protected internal override NServiceBus.Transports.TransportReceivingConfigurationResult ConfigureForReceiving(NServiceBus.Transports.TransportReceivingConfigurationContext context) { }
-        protected internal override NServiceBus.Transports.TransportSendingConfigurationResult ConfigureForSending(NServiceBus.Transports.TransportSendingConfigurationContext context) { }
-        public override NServiceBus.Transports.OutboundRoutingPolicy GetOutboundRoutingPolicy(NServiceBus.Settings.ReadOnlySettings settings) { }
-        public override NServiceBus.Transports.IManageSubscriptions GetSubscriptionManager() { }
-        public override System.Collections.Generic.IEnumerable<System.Type> GetSupportedDeliveryConstraints() { }
-        public override NServiceBus.TransportTransactionMode GetSupportedTransactionMode() { }
-        public override string ToTransportAddress(NServiceBus.LogicalAddress logicalAddress) { }
+        protected internal override NServiceBus.Transports.TransportInfrastructure Initialize(NServiceBus.Settings.SettingsHolder settings, string connectionString) { }
     }
     public class DevelopmentTransportHeader
     {

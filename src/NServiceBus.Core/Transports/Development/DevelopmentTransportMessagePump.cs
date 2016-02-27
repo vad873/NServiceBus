@@ -107,7 +107,7 @@
                     {
                         try
                         {
-                            await ProcessFile(transaction, nativeMessageId);
+                            await ProcessFile(transaction, nativeMessageId).ConfigureAwait(false);
 
                             transaction.Complete();
                         }
@@ -130,7 +130,7 @@
 
                 if (!filesFound)
                 {
-                    await Task.Delay(10, cancellationToken);
+                    await Task.Delay(10, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

@@ -64,7 +64,6 @@
     <Compile Include="DelayedDelivery\TimeoutManager\When_timeout_dispatch_fails.cs" />
     <Compile Include="DelayedDelivery\TimeoutManager\When_timeout_dispatch_fails_on_timeout_data_removal.cs" />
     <Compile Include="DelayedDelivery\TimeoutManager\When_timeout_storage_fails.cs" />
-    <Compile Include="ConfigureFileBasedTransport.cs" />
     <Compile Include="ConfigureDevelopmentTransport.cs" />
     <Compile Include="FakeTransport\CriticalError\When_registering_custom_critical_error_handler.cs" />
     <Compile Include="FakeTransport\FakeDispatcher.cs" />

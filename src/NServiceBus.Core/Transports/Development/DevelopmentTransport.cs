@@ -21,7 +21,7 @@
         /// <returns>The supported factories.</returns>
         protected internal override TransportInfrastructure Initialize(SettingsHolder settings, string connectionString)
         {
-            return new DevelopmentTransportInfrastructure();
+            return new DevelopmentTransportInfrastructure(settings);
         }
 
         /// <summary>

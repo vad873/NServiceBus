@@ -6,10 +6,25 @@
     using System.Threading.Tasks;
     using NServiceBus.Performance.TimeToBeReceived;
     using NServiceBus.Routing;
+    using NServiceBus.Settings;
     using NServiceBus.Transports;
 
     class DevelopmentTransportInfrastructure : TransportInfrastructure
     {
+        public DevelopmentTransportInfrastructure(SettingsHolder settings)
+        {
+            this.settings = settings;
+        }
+
+        public override IEnumerable<Type> DeliveryConstraints { get; } = new[]
+        {
+            typeof(DiscardIfNotReceivedBefore)
+        };
+
+        public override TransportTransactionMode TransactionMode => TransportTransactionMode.SendsAtomicWithReceive;
+
+        public override OutboundRoutingPolicy OutboundRoutingPolicy { get; } = new OutboundRoutingPolicy(OutboundRoutingType.Unicast, OutboundRoutingType.Multicast, OutboundRoutingType.Unicast);
+
         public override TransportReceiveInfrastructure ConfigureReceiveInfrastructure()
         {
             return new TransportReceiveInfrastructure(() => new DevelopmentTransportMessagePump(), () => new DevelopmentTransportQueueCreator(), () => Task.FromResult(StartupCheckResult.Success));
@@ -22,17 +37,8 @@
 
         public override TransportSubscriptionInfrastructure ConfigureSubscriptionInfrastructure()
         {
-            throw new NotImplementedException();
+            return new TransportSubscriptionInfrastructure(() => new DevelopmentTransportSubscriptionManager(settings.EndpointName().ToString(), settings.LocalAddress()));
         }
-
-        public override IEnumerable<Type> DeliveryConstraints { get; } = new[]
-        {
-            typeof(DiscardIfNotReceivedBefore)
-        };
-
-        public override TransportTransactionMode TransactionMode => TransportTransactionMode.SendsAtomicWithReceive;
-
-        public override OutboundRoutingPolicy OutboundRoutingPolicy { get; } = new OutboundRoutingPolicy(OutboundRoutingType.Unicast, OutboundRoutingType.Unicast, OutboundRoutingType.Unicast);
 
         public override EndpointInstance BindToLocalEndpoint(EndpointInstance instance)
         {
@@ -42,8 +48,10 @@
         public override string ToTransportAddress(LogicalAddress logicalAddress)
         {
             return Path.Combine(logicalAddress.EndpointInstance.Endpoint.ToString(),
-                    logicalAddress.EndpointInstance.Discriminator ?? "",
-                    logicalAddress.Qualifier ?? "");
+                logicalAddress.EndpointInstance.Discriminator ?? "",
+                logicalAddress.Qualifier ?? "");
         }
+
+        SettingsHolder settings;
     }
 }

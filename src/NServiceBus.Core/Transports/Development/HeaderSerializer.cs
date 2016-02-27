@@ -6,6 +6,7 @@ namespace NServiceBus
     using System.Text;
     using System.Xml.Serialization;
 
+    //todo: switch to the json serializer
     static class HeaderSerializer
     {
         static HeaderSerializer()

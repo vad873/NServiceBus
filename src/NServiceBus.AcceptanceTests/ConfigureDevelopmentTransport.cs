@@ -10,7 +10,7 @@ public class ConfigureDevelopmentTransport : IConfigureTestExecution
     public IEnumerable<Type> UnsupportedScenarioDescriptorTypes { get; } = new[]
    {
         typeof(AllDtcTransports),
-        typeof(AllTransportsWithCentralizedPubSubSupport)
+        typeof(AllTransportsWithMessageDrivenPubSub)
     };
 
     public Task Configure(EndpointConfiguration configuration, IDictionary<string, string> settings)

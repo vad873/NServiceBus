@@ -7,7 +7,7 @@ namespace NServiceBus
     using NServiceBus.Extensibility;
     using NServiceBus.Transports;
 
-    class Dispatcher : IDispatchMessages
+    class DevelopmentTransportDispatcher : IDispatchMessages
     {
         public Task Dispatch(TransportOperations outgoingMessages, ContextBag context)
         {

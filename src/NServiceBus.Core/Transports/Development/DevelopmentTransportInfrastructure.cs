@@ -17,7 +17,7 @@
 
         public override TransportSendInfrastructure ConfigureSendInfrastructure()
         {
-            return new TransportSendInfrastructure(() => new Dispatcher(), () => Task.FromResult(StartupCheckResult.Success));
+            return new TransportSendInfrastructure(() => new DevelopmentTransportDispatcher(), () => Task.FromResult(StartupCheckResult.Success));
         }
 
         public override TransportSubscriptionInfrastructure ConfigureSubscriptionInfrastructure()

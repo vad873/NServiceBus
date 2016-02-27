@@ -267,7 +267,7 @@
     <Compile Include="Pipeline\Outgoing\ImmediateDispatchTerminator.cs" />
     <Compile Include="Transports\DispatchConsistency.cs" />
     <Compile Include="Transports\Development\DirectoryBasedTransaction.cs" />
-    <Compile Include="Transports\Development\Dispatcher.cs" />
+    <Compile Include="Transports\Development\DevelopmentTransportDispatcher.cs" />
     <Compile Include="Transports\Development\DevelopmentTransport.cs" />
     <Compile Include="Transports\Development\DevelopmentTransportMessagePump.cs" />
     <Compile Include="Transports\Development\DevelopmentTransportQueueCreator.cs" />

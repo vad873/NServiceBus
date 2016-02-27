@@ -9,6 +9,7 @@ public class ConfigureDevelopmentTransport : IConfigureTestExecution
 {
     public IEnumerable<Type> UnsupportedScenarioDescriptorTypes { get; } = new[]
    {
+        typeof(AllDtcTransports),
         typeof(AllTransportsWithCentralizedPubSubSupport)
     };
 

@@ -36,33 +36,7 @@ namespace NServiceBus
             }
         }
 
-        IEnumerable<string> GetSubscribersFor(Type messageType)
-        {
-            var subscribers = new List<string>();
-
-            var allEventTypes = new List<Type>();
-
-            //hack: remove when https://github.com/Particular/NServiceBus/pull/3521 is merged
-            if (!messageType.FullName.EndsWith("__impl"))
-            {
-                allEventTypes.Add(messageType);
-            }
-
-            allEventTypes.AddRange(messageType.GetInterfaces().Where(i=>i != typeof(IMessage) && i != typeof(IEvent)));
-
-            foreach (var eventType in allEventTypes)
-            {
-                var eventDir = Path.Combine(basePath, ".events", eventType.FullName);
-
-                foreach (var file in Directory.GetFiles(eventDir))
-                {
-                    subscribers.Add(File.ReadAllText(file));
-                }
-            }
-
-            return subscribers.Distinct();
-        }
-
+      
         void DispatchUnicast(IEnumerable<UnicastTransportOperation> transportOperations, ContextBag context)
         {
             foreach (var transportOperation in transportOperations)
@@ -103,6 +77,56 @@ namespace NServiceBus
                 File.WriteAllLines(tempFile, messageContents);
                 File.Move(tempFile, messagePath);
             }
+        }
+        IEnumerable<string> GetSubscribersFor(Type messageType)
+        {
+            var subscribers = new List<string>();
+
+            var allEventTypes = GetPotentialEventTypes(messageType);
+
+            foreach (var eventType in allEventTypes)
+            {
+                var eventDir = Path.Combine(basePath, ".events", eventType.FullName);
+
+                foreach (var file in Directory.GetFiles(eventDir))
+                {
+                    subscribers.Add(File.ReadAllText(file));
+                }
+            }
+
+            return subscribers.Distinct();
+        }
+
+        static List<Type> GetPotentialEventTypes(Type messageType)
+        {
+            var allEventTypes = new List<Type>();
+
+            allEventTypes.AddRange(messageType.GetInterfaces().Where(i =>!IsCoreMarkerInterface(i)));
+
+            var currentType = messageType;
+
+            while (currentType.BaseType != null)
+            {
+                //do not include the marker interfaces
+                if (IsCoreMarkerInterface(currentType))
+                {
+                    break;
+                }
+
+                //hack: remove when https://github.com/Particular/NServiceBus/pull/3521 is merged
+                if (!messageType.FullName.EndsWith("__impl"))
+                {
+                    allEventTypes.Add(currentType);
+                }
+
+                currentType = currentType.BaseType;
+            }
+            return allEventTypes;
+        }
+
+        static bool IsCoreMarkerInterface(Type type)
+        {
+            return type.Assembly == typeof(IMessage).Assembly;
         }
 
         string basePath;

@@ -3,6 +3,7 @@ namespace NServiceBus
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using NServiceBus.Extensibility;
     using NServiceBus.Transports;
@@ -37,12 +38,29 @@ namespace NServiceBus
 
         IEnumerable<string> GetSubscribersFor(Type messageType)
         {
-            var eventDir = Path.Combine(basePath, ".events", messageType.FullName);
+            var subscribers = new List<string>();
 
-            foreach (var file in Directory.GetFiles(eventDir))
+            var allEventTypes = new List<Type>();
+
+            //hack: remove when https://github.com/Particular/NServiceBus/pull/3521 is merged
+            if (!messageType.FullName.EndsWith("__impl"))
             {
-                yield return File.ReadAllText(file);
+                allEventTypes.Add(messageType);
             }
+
+            allEventTypes.AddRange(messageType.GetInterfaces().Where(i=>i != typeof(IMessage) && i != typeof(IEvent)));
+
+            foreach (var eventType in allEventTypes)
+            {
+                var eventDir = Path.Combine(basePath, ".events", eventType.FullName);
+
+                foreach (var file in Directory.GetFiles(eventDir))
+                {
+                    subscribers.Add(File.ReadAllText(file));
+                }
+            }
+
+            return subscribers.Distinct();
         }
 
         void DispatchUnicast(IEnumerable<UnicastTransportOperation> transportOperations, ContextBag context)

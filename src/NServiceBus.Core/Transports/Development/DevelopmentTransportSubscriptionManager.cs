@@ -20,6 +20,7 @@
             var eventDir = GetEventDirectory(eventType);
 
             //todo: its probably safer to let the publishers create the dir and have the subscribers require it to be there?
+            // that way we can detect that there is indeed a publisher for the event. That said it also means that we will have do "retries" here due to race condition.
             if (!Directory.Exists(eventDir))
             {
                 Directory.CreateDirectory(eventDir);

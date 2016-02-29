@@ -27,10 +27,7 @@
             var stopTime = DateTime.Now.AddSeconds(45);
 
             var testContext =
-                await Scenario.Define<TimeoutTestContext>(c =>
-                    {
-                        c.SecondsToWait = 10;
-                    })
+                await Scenario.Define<TimeoutTestContext>()
                     .WithEndpoint<EndpointWithFlakyTimeoutPersister>(b =>
                     {
                         b.CustomConfig((busConfig, context) =>
@@ -50,7 +47,6 @@
 
         public class TimeoutTestContext : ScenarioContext
         {
-            public int SecondsToWait { get; set; }
             public bool FatalErrorOccurred { get; set; }
         }
 
@@ -77,10 +73,7 @@
 
                 protected override void Setup(FeatureConfigurationContext context)
                 {
-                    var testContext = context.Settings.Get<TimeoutTestContext>();
-                    context.Container
-                        .ConfigureComponent<CyclingOutageTimeoutPersister>(DependencyLifecycle.SingleInstance)
-                        .ConfigureProperty(tp => tp.SecondsToWait, testContext.SecondsToWait);
+                    context.Container.ConfigureComponent(b => new CyclingOutageTimeoutPersister(TimeSpan.FromSeconds(10)), DependencyLifecycle.SingleInstance);
                 }
             }
         }

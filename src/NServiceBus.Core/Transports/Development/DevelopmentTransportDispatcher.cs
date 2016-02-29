@@ -99,7 +99,7 @@ namespace NServiceBus
 
         static List<Type> GetPotentialEventTypes(Type messageType)
         {
-            var allEventTypes = new List<Type>();
+            var allEventTypes = new List<Type> { messageType };
 
             allEventTypes.AddRange(messageType.GetInterfaces().Where(i =>!IsCoreMarkerInterface(i)));
 
@@ -112,13 +112,7 @@ namespace NServiceBus
                 {
                     break;
                 }
-
-                //hack: remove when https://github.com/Particular/NServiceBus/pull/3521 is merged
-                if (!messageType.FullName.EndsWith("__impl"))
-                {
-                    allEventTypes.Add(currentType);
-                }
-
+                
                 currentType = currentType.BaseType;
             }
             return allEventTypes;

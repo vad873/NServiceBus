@@ -88,6 +88,11 @@ namespace NServiceBus
             {
                 var eventDir = Path.Combine(basePath, ".events", eventType.FullName);
 
+                if (!Directory.Exists(eventDir))
+                {
+                    continue;
+                }
+
                 foreach (var file in Directory.GetFiles(eventDir))
                 {
                     subscribers.Add(File.ReadAllText(file));

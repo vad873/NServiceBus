@@ -26,9 +26,13 @@ namespace NServiceBus
         /// <summary>
         /// Initializes a fresh instance of the builder.
         /// </summary>
-        public EndpointConfiguration()
+        public EndpointConfiguration(string endpointName)
             : base(new SettingsHolder())
         {
+            Guard.AgainstNullAndEmpty(nameof(endpointName), endpointName);
+
+            Settings.Set<EndpointName>(new EndpointName(endpointName));
+
             configurationSourceToUse = new DefaultConfigurationSource();
 
             pipelineCollection = new PipelineConfiguration();
@@ -109,15 +113,6 @@ namespace NServiceBus
         {
             Guard.AgainstNull(nameof(configurationSource), configurationSource);
             configurationSourceToUse = configurationSource;
-        }
-
-        /// <summary>
-        /// Defines the name to use for this endpoint.
-        /// </summary>
-        public void EndpointName(string name)
-        {
-            Guard.AgainstNullAndEmpty(nameof(name), name);
-            endpointName = new EndpointName(name);
         }
 
         /// <summary>
@@ -218,10 +213,6 @@ namespace NServiceBus
 
             Settings.SetDefault<IConfigurationSource>(configurationSourceToUse);
 
-            var endpointHelper = new EndpointHelper(new StackTrace());
-
-            Settings.SetDefault("EndpointVersion", endpointHelper.GetEndpointVersion());
-            Settings.SetDefault<EndpointName>(endpointName ?? new EndpointName(endpointHelper.GetDefaultEndpointName()));
             if (publicReturnAddress != null)
             {
                 Settings.SetDefault("PublicReturnAddress", publicReturnAddress);
@@ -251,7 +242,7 @@ namespace NServiceBus
                     throw new Exception($"Unable to create the type '{t.Name}'. Types implementing '{typeof(T).Name}' must have a public parameterless (default) constructor.");
                 }
 
-                var instanceToInvoke = (T) Activator.CreateInstance(t);
+                var instanceToInvoke = (T)Activator.CreateInstance(t);
                 action(instanceToInvoke);
             });
         }
@@ -286,7 +277,6 @@ namespace NServiceBus
         IConfigurationSource configurationSourceToUse;
         ConventionsBuilder conventionsBuilder;
         IContainer customBuilder;
-        EndpointName endpointName;
         List<string> excludedAssemblies = new List<string>();
         List<Type> excludedTypes = new List<Type>();
         PipelineConfiguration pipelineCollection;

@@ -304,11 +304,10 @@ namespace NServiceBus
     }
     public class EndpointConfiguration : NServiceBus.Configuration.AdvanceExtensibility.ExposeSettings
     {
-        public EndpointConfiguration() { }
+        public EndpointConfiguration(string endpointName) { }
         public NServiceBus.Pipeline.PipelineSettings Pipeline { get; }
         public NServiceBus.ConventionsBuilder Conventions() { }
         public void CustomConfigurationSource(NServiceBus.Config.ConfigurationSource.IConfigurationSource configurationSource) { }
-        public void EndpointName(string name) { }
         public void ExcludeAssemblies(params string[] assemblies) { }
         public void ExcludeTypes(params System.Type[] types) { }
         public void OverridePublicReturnAddress(string address) { }

@@ -14,12 +14,13 @@
     {
         static ILog Logger = LogManager.GetLogger<EndpointRunner>();
         EndpointBehavior behavior;
-        IStartableEndpoint startable;
         IEndpointInstance endpointInstance;
         EndpointCustomizationConfiguration configuration;
         ScenarioContext scenarioContext;
         RunSettings runSettings;
         EndpointConfiguration endpointConfiguration;
+        AcceptanceTestContainer startableContainer;
+        IStartedContainer startedContainer;
 
         public bool FailOnErrorMessage => !behavior.DoNotFailOnErrorMessages;
 
@@ -56,8 +57,9 @@
                     endpointConfiguration.SendOnly();
                 }
 
-                var initializable = Endpoint.Prepare(endpointConfiguration);
-                startable = await initializable.Initialize().ConfigureAwait(false);
+                startableContainer = new AcceptanceTestContainer(run);
+
+                endpointInstance = await startableContainer.Register(endpointConfiguration).ConfigureAwait(false);
 
                 if (!configuration.SendOnly)
                 {
@@ -88,7 +90,7 @@
         {
             try
             {
-                endpointInstance = await startable.Start().ConfigureAwait(false);
+                startedContainer = await startableContainer.Start().ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                 {
@@ -114,7 +116,7 @@
                     await Task.Run(async () =>
                     {
                         var executedWhens = new List<Guid>();
-                        
+
                         while (!token.IsCancellationRequested)
                         {
                             if (executedWhens.Count == behavior.Whens.Count)
@@ -161,7 +163,7 @@
         {
             try
             {
-                await endpointInstance.Stop().ConfigureAwait(false);
+                await startedContainer.Stop().ConfigureAwait(false);
 
                 return Result.Success();
             }
@@ -193,6 +195,13 @@
         public string Name()
         {
             return configuration.EndpointName;
+        }
+
+        public class AcceptanceTestContainer : BaseContainer
+        {
+            public AcceptanceTestContainer(RunDescriptor runDescriptor) : base(runDescriptor.Key)
+            {
+            }
         }
 
         public class Result

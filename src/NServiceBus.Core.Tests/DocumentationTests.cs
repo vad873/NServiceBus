@@ -18,7 +18,7 @@
         [Test]
         public void EnsureNoDocumentationIsEmpty()
         {
-            var assembly = typeof(Endpoint).Assembly;
+            var assembly = typeof(IRuntimeContainer).Assembly;
             var codeBase = assembly.CodeBase;
             var uri = new UriBuilder(codeBase);
             var path = Uri.UnescapeDataString(uri.Path);

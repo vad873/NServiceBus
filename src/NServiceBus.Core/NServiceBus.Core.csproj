@@ -96,6 +96,7 @@
     <Compile Include="Audit\ConfigureAudit.cs" />
     <Compile Include="Audit\AuditToDispatchConnector.cs" />
     <Compile Include="Audit\InvokeAuditPipelineBehavior.cs" />
+    <Compile Include="BaseContainer.cs" />
     <Compile Include="Encryption\WireEncryptedStringConversions.cs" />
     <Compile Include="CircuitBreakers\ICircuitBreaker.cs" />
     <Compile Include="CriticalError\ICriticalErrorContext.cs" />
@@ -103,8 +104,9 @@
     <Compile Include="DelayedDelivery\TimeoutManager\ProcessingFailureInfo.cs" />
     <Compile Include="DetectObsoleteConfigurationSettings.cs" />
     <Compile Include="DelayedDelivery\TimeoutManager\TimeoutRecoverabilityBehavior.cs" />
-    <Compile Include="Endpoint.cs" />
+    <Compile Include="IStartedContainer.cs" />
     <Compile Include="Forwarding\ConfigureForwarding.cs" />
+    <Compile Include="IRuntimeContainer.cs" />
     <Compile Include="Pipeline\ForkConnector.cs" />
     <Compile Include="Pipeline\Incoming\ISatelliteProcessingContext.cs" />
     <Compile Include="Pipeline\Incoming\SatelliteProcessingContext.cs" />

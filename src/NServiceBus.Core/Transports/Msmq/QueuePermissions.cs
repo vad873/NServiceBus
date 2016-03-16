@@ -6,9 +6,9 @@
     using System.Security;
     using Logging;
 
-    class QueuePermissionChecker
+    static class QueuePermissions
     {
-        public void CheckQueuePermissions(IReadOnlyCollection<string> queues)
+        public static void CheckQueuePermissions(IReadOnlyCollection<string> queues)
         {
             foreach (var address in queues)
             {
@@ -18,10 +18,13 @@
 
         static void CheckQueue(string address)
         {
+            var msmqAddress = MsmqAddress.Parse(address);
+
             MessageQueue messageQueue;
-            if (!MsmqUtilities.TryOpenQueue(address, out messageQueue))
+            if (!MsmqUtilities.TryOpenQueue(msmqAddress, out messageQueue))
             {
-                Logger.Warn($"Unable to open the queue at address '{address}'. Make sure the queue exists locally, and the address is correct.");
+                Logger.Warn($"Unable to open the queue at address '{address}'. Make sure the queue exists, and the address is correct.");
+                Logger.Debug("Processing will still continue.");
                 return;
             }
 
@@ -61,6 +64,24 @@
             }
         }
 
-        static ILog Logger = LogManager.GetLogger<QueuePermissionChecker>();
+        public static void SetPermissionsForQueue(MessageQueue queue, string account)
+        {
+            try
+            {
+                queue.SetPermissions(QueueCreator.LocalAdministratorsGroupName, MessageQueueAccessRights.FullControl, AccessControlEntryType.Allow);
+                queue.SetPermissions(QueueCreator.LocalEveryoneGroupName, MessageQueueAccessRights.WriteMessage, AccessControlEntryType.Allow);
+                queue.SetPermissions(QueueCreator.LocalAnonymousLogonName, MessageQueueAccessRights.WriteMessage, AccessControlEntryType.Allow);
+
+                queue.SetPermissions(account, MessageQueueAccessRights.WriteMessage, AccessControlEntryType.Allow);
+                queue.SetPermissions(account, MessageQueueAccessRights.ReceiveMessage, AccessControlEntryType.Allow);
+                queue.SetPermissions(account, MessageQueueAccessRights.PeekMessage, AccessControlEntryType.Allow);
+            }
+            catch (MessageQueueException ex)
+            {
+                Logger.Error($"Unable to set permissions for queue {queue.QueueName}", ex);
+            }
+        }
+
+        static ILog Logger = LogManager.GetLogger(typeof(QueuePermissions));
     }
 }

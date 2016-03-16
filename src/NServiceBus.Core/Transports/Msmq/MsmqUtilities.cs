@@ -71,34 +71,6 @@ namespace NServiceBus
             return headers;
         }
 
-        public static bool TryOpenQueue(string address, out MessageQueue messageQueue)
-        {
-            messageQueue = null;
-            var msmqAddress = MsmqAddress.Parse(address);
-            var path = msmqAddress.PathWithoutPrefix;
-            try
-            {
-                if (MessageQueue.Exists(path))
-                {
-                    messageQueue = new MessageQueue(path);
-                    return true;
-                }
-            }
-            catch (MessageQueueException mex)
-            {
-                if (msmqAddress.IsRemote && (mex.MessageQueueErrorCode == MessageQueueErrorCode.IllegalQueuePathName))
-                {
-                    return false;
-                }
-                if (mex.MessageQueueErrorCode == MessageQueueErrorCode.QueueExists)
-                {
-                    return false;
-                }
-            }
-
-            return false;
-        }
-
         static string GetCorrelationId(Message message, Dictionary<string, string> headers)
         {
             string correlationId;
@@ -259,9 +231,47 @@ namespace NServiceBus
             }
         }
 
+        public static bool TryOpenQueue(MsmqAddress msmqAddress, out MessageQueue messageQueue)
+        {
+            messageQueue = null;
+
+            var queuePath = msmqAddress.PathWithoutPrefix;
+
+            Logger.Debug($"Checking if queue exists: {queuePath}.");
+
+            if (msmqAddress.IsRemote)
+            {
+                Logger.Debug("Queue is on remote machine.");
+                Logger.Debug("If this does not succeed (like if the remote machine is disconnected), processing will continue.");
+            }
+
+            var path = msmqAddress.PathWithoutPrefix;
+            try
+            {
+                if (MessageQueue.Exists(path))
+                {
+                    messageQueue = new MessageQueue(path);
+
+                    Logger.DebugFormat("Verified that the queue: [{0}] existed", queuePath);
+
+                    return true;
+                }
+            }
+            catch (MessageQueueException)
+            {
+                // Can happen because of an invalid queue path or trying to access a remote private queue.
+                // Either way, this results in a failed attempt, therefore returning false.
+
+                return false;
+            }
+
+            return false;
+        }
+
         const string DIRECTPREFIX = "DIRECT=OS:";
         const string DIRECTPREFIX_TCP = "DIRECT=TCP:";
         internal const string PRIVATE = "\\private$\\";
+
         static System.Xml.Serialization.XmlSerializer headerSerializer = new System.Xml.Serialization.XmlSerializer(typeof(List<HeaderInfo>));
         static ILog Logger = LogManager.GetLogger<MsmqUtilities>();
     }

@@ -1,9 +1,9 @@
 namespace NServiceBus
 {
-    using System;
     using System.Messaging;
     using System.Security.Principal;
     using System.Threading.Tasks;
+    using Features;
     using Logging;
     using Transports;
 
@@ -31,83 +31,59 @@ namespace NServiceBus
 
         void CreateQueueIfNecessary(string address, string identity)
         {
-            if (address == null)
-            {
-                return;
-            }
+            Guard.AgainstNullAndEmpty(nameof(address), address);
+
             var msmqAddress = MsmqAddress.Parse(address);
-            var queuePath = msmqAddress.PathWithoutPrefix;
+            
+            Logger.Debug($"Trying to open queue '{address}'.");
 
-            if (msmqAddress.IsRemote)
+            MessageQueue queue;
+            if (!MsmqUtilities.TryOpenQueue(msmqAddress, out queue))
             {
-                Logger.Debug("Queue is on remote machine.");
-                Logger.Debug("If this does not succeed (like if the remote machine is disconnected), processing will continue.");
+                Logger.Warn($"Queue '{address}' does not exist.");
+                Logger.Debug($"Creating queue: {address}");
+
+                queue = CreateQueue(msmqAddress, identity, settings.UseTransactionalQueues);
             }
 
-            Logger.Debug($"Checking if queue exists: {address}.");
+            if (queue != null)
+            {
+                using (queue)
+                {
+                    Logger.Debug("Setting queue permissions.");
+                    QueuePermissions.SetPermissionsForQueue(queue, identity);
+                }
+            }
+        }
+
+        static MessageQueue CreateQueue(MsmqAddress msmqAddress, string account, bool transactional)
+        {
+            var queuePath = msmqAddress.PathWithoutPrefix;
 
             try
             {
-                if (MessageQueue.Exists(queuePath))
-                {
-                    Logger.Debug("Queue exists, going to set permissions.");
-                    SetPermissionsForQueue(queuePath, identity);
-                    return;
-                }
+                var queue = MessageQueue.Create(queuePath, transactional);
 
-                Logger.Warn("Queue " + queuePath + " does not exist.");
-                Logger.Debug("Going to create queue: " + queuePath);
+                Logger.DebugFormat($"Created queue, path: [{queuePath}], identity: [{account}], transactional: [{transactional}]");
 
-                CreateQueue(queuePath, identity, settings.UseTransactionalQueues);
+                return queue;
             }
             catch (MessageQueueException ex)
             {
                 if (msmqAddress.IsRemote && (ex.MessageQueueErrorCode == MessageQueueErrorCode.IllegalQueuePathName))
                 {
-                    return;
+                    return null;
                 }
                 if (ex.MessageQueueErrorCode == MessageQueueErrorCode.QueueExists)
                 {
                     //Solve the race condition problem when multiple endpoints try to create same queue (e.g. error queue).
-                    return;
+                    return null;
                 }
-                Logger.Error($"Could not create queue {address} or check its existence. Processing will still continue.", ex);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Could not create queue {address} or check its existence. Processing will still continue.", ex);
+
+                Logger.Error($"Could not create queue {msmqAddress}. Processing will still continue.", ex);
             }
 
-            Logger.DebugFormat("Verified that the queue: [{0}] existed", address);
-        }
-
-        static void CreateQueue(string queuePath, string account, bool transactional)
-        {
-            using (var queue = MessageQueue.Create(queuePath, transactional))
-            {
-                SetPermissionsForQueue(queue, account);
-            }
-
-            Logger.DebugFormat("Created queue, path: [{0}], identity: [{1}], transactional: [{2}]", queuePath, account, transactional);
-        }
-
-        static void SetPermissionsForQueue(string queuePath, string account)
-        {
-            using (var messageQueue = new MessageQueue(queuePath))
-            {
-                SetPermissionsForQueue(messageQueue, account);
-            }
-        }
-
-        static void SetPermissionsForQueue(MessageQueue queue, string account)
-        {
-            queue.SetPermissions(LocalAdministratorsGroupName, MessageQueueAccessRights.FullControl, AccessControlEntryType.Allow);
-            queue.SetPermissions(LocalEveryoneGroupName, MessageQueueAccessRights.WriteMessage, AccessControlEntryType.Allow);
-            queue.SetPermissions(LocalAnonymousLogonName, MessageQueueAccessRights.WriteMessage, AccessControlEntryType.Allow);
-
-            queue.SetPermissions(account, MessageQueueAccessRights.WriteMessage, AccessControlEntryType.Allow);
-            queue.SetPermissions(account, MessageQueueAccessRights.ReceiveMessage, AccessControlEntryType.Allow);
-            queue.SetPermissions(account, MessageQueueAccessRights.PeekMessage, AccessControlEntryType.Allow);
+            return null;
         }
 
         MsmqSettings settings;

@@ -121,7 +121,7 @@ namespace NServiceBus
                 () =>
                 {
                     var bindings = settings.Get<QueueBindings>();
-                    new QueuePermissionChecker().CheckQueuePermissions(bindings.ReceivingAddresses);
+                    QueuePermissions.CheckQueuePermissions(bindings.ReceivingAddresses);
                     return Task.FromResult(StartupCheckResult.Success);
                 });
         }
@@ -150,7 +150,7 @@ namespace NServiceBus
                 () =>
                 {
                     var bindings = settings.Get<QueueBindings>();
-                    new QueuePermissionChecker().CheckQueuePermissions(bindings.SendingAddresses);
+                    QueuePermissions.CheckQueuePermissions(bindings.SendingAddresses);
                     var result = new MsmqTimeToBeReceivedOverrideCheck(settings).CheckTimeToBeReceivedOverrides();
                     return Task.FromResult(result);
                 });

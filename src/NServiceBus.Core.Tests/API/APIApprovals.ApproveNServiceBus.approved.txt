@@ -305,7 +305,6 @@ namespace NServiceBus
             "stead. Will be removed in version 7.0.0.", true)]
         public void OverridePublicReturnAddress(NServiceBus.Address address) { }
         public void RegisterComponents(System.Action<NServiceBus.ObjectBuilder.IConfigureComponents> registration) { }
-        public void RunWhenEndpointStartsAndStops(NServiceBus.IWantToRunWhenBusStartsAndStops callbackObject) { }
         [System.ObsoleteAttribute("Please use `EndpointConfiguration.ExcludeAssemblies` instead. Will be removed in " +
             "version 7.0.0.", true)]
         public void ScanAssembliesInDirectory(string probeDirectory) { }
@@ -644,12 +643,11 @@ namespace NServiceBus
     {
         void Run(NServiceBus.Settings.SettingsHolder settings);
     }
-    [JetBrains.Annotations.UsedImplicitlyAttribute(JetBrains.Annotations.ImplicitUseTargetFlags.Default | JetBrains.Annotations.ImplicitUseTargetFlags.Itself | JetBrains.Annotations.ImplicitUseTargetFlags.Members | JetBrains.Annotations.ImplicitUseTargetFlags.WithMembers)]
-    public interface IWantToRunWhenBusStartsAndStops
-    {
-        System.Threading.Tasks.Task Start(NServiceBus.IMessageSession session);
-        System.Threading.Tasks.Task Stop(NServiceBus.IMessageSession session);
-    }
+    [System.ObsoleteAttribute("If self-hosting, call your start/stop code before/after `Endpoint.Create` or `End" +
+        "point.Stop`. If using NServiceBus.Host or NServiceBus.Host.AzureCloudService, im" +
+        "plement `IWantToRunWhenEndpointStartsAndStops` instead. Will be removed in versi" +
+        "on 7.0.0.", true)]
+    public interface IWantToRunWhenBusStartsAndStops { }
     public class JsonSerializer : NServiceBus.Serialization.SerializationDefinition
     {
         public JsonSerializer() { }

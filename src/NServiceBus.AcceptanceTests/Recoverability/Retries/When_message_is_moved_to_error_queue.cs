@@ -28,7 +28,6 @@
                     Id = context.Id
                 }))
             )
-            .WithEndpoint<ReceiverEndpoint>()
             .WithEndpoint<ErrorSpy>()
             .Done(c => c.MessageMovedToErrorQueue)
             .Repeat(r => r.For<AllDtcTransports>())
@@ -36,7 +35,7 @@
             .Run();
         }
 
-        const string ErrorQueueName = "error_spy_queue";
+        const string ErrorSpyQueueName = "error_spy_queue";
 
         class Context : ScenarioContext
         {
@@ -59,9 +58,8 @@
                     config.DisableFeature<FirstLevelRetries>();
                     config.DisableFeature<SecondLevelRetries>();
                     config.Pipeline.Register(new RegisterThrowingBehavior());
-                    config.SendFailedMessagesTo(ErrorQueueName);
-                })
-                    .AddMapping<OutgoingMessage>(typeof(ReceiverEndpoint));
+                    config.SendFailedMessagesTo(ErrorSpyQueueName);
+                });
             }
 
             class InitiatingHandler : IHandleMessages<InitiatingMessage>
@@ -72,7 +70,7 @@
                 {
                     if (initiatingMessage.Id == TestContext.Id)
                     {
-                        await context.Send(new OutgoingMessage
+                        await context.Send(ErrorSpyQueueName, new OutgoingMessage
                         {
                             Id = initiatingMessage.Id
                         });
@@ -81,11 +79,27 @@
             }
         }
 
-        class ReceiverEndpoint : EndpointConfigurationBuilder
+        class ErrorSpy : EndpointConfigurationBuilder
         {
-            public ReceiverEndpoint()
+            public ErrorSpy()
             {
-                EndpointSetup<DefaultServer>();
+                EndpointSetup<DefaultServer>(config => config.LimitMessageProcessingConcurrencyTo(1))
+                    .CustomEndpointName(ErrorSpyQueueName);
+            }
+
+            class ErrorHandler : IHandleMessages<InitiatingMessage>
+            {
+                public Context TestContext { get; set; }
+
+                public Task Handle(InitiatingMessage initiatingMessage, IMessageHandlerContext context)
+                {
+                    if (initiatingMessage.Id == TestContext.Id)
+                    {
+                        TestContext.MessageMovedToErrorQueue = true;
+                    }
+
+                    return Task.FromResult(0);
+                }
             }
 
             class OutgoingMessageHandler : IHandleMessages<OutgoingMessage>
@@ -97,29 +111,6 @@
                     if (message.Id == TestContext.Id)
                     {
                         TestContext.OutgoingMessageSent = true;
-                    }
-
-                    return Task.FromResult(0);
-                }
-            }
-        }
-
-        class ErrorSpy : EndpointConfigurationBuilder
-        {
-            public ErrorSpy()
-            {
-                EndpointSetup<DefaultServer>().CustomEndpointName(ErrorQueueName);
-            }
-
-            class Handler : IHandleMessages<InitiatingMessage>
-            {
-                public Context TestContext { get; set; }
-
-                public Task Handle(InitiatingMessage initiatingMessage, IMessageHandlerContext context)
-                {
-                    if (initiatingMessage.Id == TestContext.Id)
-                    {
-                        TestContext.MessageMovedToErrorQueue = true;
                     }
 
                     return Task.FromResult(0);

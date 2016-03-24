@@ -26,7 +26,7 @@
                 .WithEndpoint<ErrorSpy>()
                 .Done(c => c.MessageMovedToErrorQueue)
                 .Repeat(r => r.For<AllDtcTransports>())
-                .Should(c => Assert.Greater(c.NumberOfProcessingAttempts, 1, "Should process at least once"))
+                .Should(c => Assert.Greater(c.NumberOfProcessingAttempts, 1, "Should retry at least once"))
                 .Should(c => Assert.That(c.TransactionStatuses, Is.All.Not.EqualTo(TransactionStatus.Committed)))
                 .Run();
         }

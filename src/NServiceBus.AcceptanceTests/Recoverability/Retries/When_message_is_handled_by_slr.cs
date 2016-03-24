@@ -29,21 +29,22 @@
                     Id = context.Id
                 }))
             )
-            .WithEndpoint<ReceiverEndpoint>()
             .WithEndpoint<ErrorSpy>()
             .Done(c => c.MessageMovedToErrorQueue)
             .Repeat(r => r.For<AllDtcTransports>())
+            .Should(c => Assert.Greater(c.NumberOfProcessingAttempts, 1, "Should retry at least once"))
             .Should(c => Assert.IsFalse(c.OutgoingMessageSent, "Outgoing messages should not be sent"))
             .Run();
         }
 
-        const string ErrorQueueName = "error_spy_queue";
+        const string ErrorSpyQueueName = "error_spy_queue";
 
         class Context : ScenarioContext
         {
             public Guid Id { get; set; }
             public bool MessageMovedToErrorQueue { get; set; }
             public bool OutgoingMessageSent { get; set; }
+            public int NumberOfProcessingAttempts { get; set; }
             public TransportTransactionMode TransactionMode { get; set; }
         }
 
@@ -61,14 +62,13 @@
                     config.EnableFeature<SecondLevelRetries>();
                     config.EnableFeature<TimeoutManager>();
                     config.Pipeline.Register(new RegisterThrowingBehavior());
-                    config.SendFailedMessagesTo(ErrorQueueName);
+                    config.SendFailedMessagesTo(ErrorSpyQueueName);
                 })
-                    .WithConfig<SecondLevelRetriesConfig>(slrConfig =>
-                    {
-                        slrConfig.NumberOfRetries = 3;
-                        slrConfig.TimeIncrease = TimeSpan.FromSeconds(1);
-                    })
-                    .AddMapping<OutgoingMessage>(typeof(ReceiverEndpoint));
+                .WithConfig<SecondLevelRetriesConfig>(slrConfig =>
+                {
+                    slrConfig.NumberOfRetries = 1;
+                    slrConfig.TimeIncrease = TimeSpan.FromSeconds(1);
+                });
             }
 
             class InitiatingHandler : IHandleMessages<InitiatingMessage>
@@ -79,7 +79,9 @@
                 {
                     if (initiatingMessage.Id == TestContext.Id)
                     {
-                        await context.Send(new OutgoingMessage
+                        TestContext.NumberOfProcessingAttempts++;
+
+                        await context.Send(ErrorSpyQueueName, new OutgoingMessage
                         {
                             Id = initiatingMessage.Id
                         });
@@ -88,11 +90,27 @@
             }
         }
 
-        class ReceiverEndpoint : EndpointConfigurationBuilder
+        class ErrorSpy : EndpointConfigurationBuilder
         {
-            public ReceiverEndpoint()
+            public ErrorSpy()
             {
-                EndpointSetup<DefaultServer>();
+                EndpointSetup<DefaultServer>(config => config.LimitMessageProcessingConcurrencyTo(1))
+                    .CustomEndpointName(ErrorSpyQueueName);
+            }
+
+            class ErrorHandler : IHandleMessages<InitiatingMessage>
+            {
+                public Context TestContext { get; set; }
+
+                public Task Handle(InitiatingMessage initiatingMessage, IMessageHandlerContext context)
+                {
+                    if (initiatingMessage.Id == TestContext.Id)
+                    {
+                        TestContext.MessageMovedToErrorQueue = true;
+                    }
+
+                    return Task.FromResult(0);
+                }
             }
 
             class OutgoingMessageHandler : IHandleMessages<OutgoingMessage>
@@ -104,29 +122,6 @@
                     if (message.Id == TestContext.Id)
                     {
                         TestContext.OutgoingMessageSent = true;
-                    }
-
-                    return Task.FromResult(0);
-                }
-            }
-        }
-
-        class ErrorSpy : EndpointConfigurationBuilder
-        {
-            public ErrorSpy()
-            {
-                EndpointSetup<DefaultServer>().CustomEndpointName(ErrorQueueName);
-            }
-
-            class Handler : IHandleMessages<InitiatingMessage>
-            {
-                public Context TestContext { get; set; }
-
-                public Task Handle(InitiatingMessage initiatingMessage, IMessageHandlerContext context)
-                {
-                    if (initiatingMessage.Id == TestContext.Id)
-                    {
-                        TestContext.MessageMovedToErrorQueue = true;
                     }
 
                     return Task.FromResult(0);

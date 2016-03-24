@@ -102,9 +102,10 @@
     <Compile Include="Pipeline\When_replacing_behavior.cs" />
     <Compile Include="Persistence\When_a_persistence_does_not_provide_ISynchronizationContext.cs" />
     <Compile Include="Recoverability\Retries\When_message_is_handled_by_slr.cs" />
+    <Compile Include="Recoverability\Retries\When_message_is_handled_by_slr_using_dtc.cs" />
     <Compile Include="Recoverability\Retries\When_message_fails_retries.cs" />
-    <Compile Include="Recoverability\Retries\When_message_goes_through_all_retries.cs" />
     <Compile Include="Recoverability\Retries\When_message_is_moved_to_error_queue.cs" />
+    <Compile Include="Recoverability\Retries\When_message_is_moved_to_error_queue_using_dtc.cs" />
     <Compile Include="Recoverability\Retries\When_performing_slr_and_counting.cs" />
     <Compile Include="Recoverability\Retries\When_performing_slr_with_non_min_policy.cs" />
     <Compile Include="Recoverability\Retries\When_performing_slr_with_min_policy.cs" />

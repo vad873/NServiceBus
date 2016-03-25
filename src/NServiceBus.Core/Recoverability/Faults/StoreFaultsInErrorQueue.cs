@@ -20,15 +20,15 @@ namespace NServiceBus.Features
             var errorQueue = ErrorQueueSettings.GetConfiguredErrorQueue(context.Settings);
             context.Settings.Get<QueueBindings>().BindSending(errorQueue);
 
+            var failureInfoStorage = new FailureInfoStorage();
+            context.Container.RegisterSingleton(failureInfoStorage);
+
             if (context.Settings.GetRequiredTransactionModeForReceives() == TransportTransactionMode.None)
             {
                 context.Pipeline.Register(new MoveFaultsToErrorQueueNoTransactionBehavior.Registration(errorQueue, context.Settings.LocalAddress()));
             }
             else
             {
-                var failureInfoStorage = new FailureInfoStorage();
-                context.Container.RegisterSingleton(failureInfoStorage);
-
                 context.Pipeline.Register(new MoveFaultsToErrorQueueBehavior.Registration(errorQueue, context.Settings.LocalAddress()));
             }
 

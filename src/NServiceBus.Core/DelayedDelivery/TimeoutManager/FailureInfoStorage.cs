@@ -13,7 +13,7 @@ namespace NServiceBus
             this.maxElements = maxElements;
         }
 
-        public void RecordFailureInfoForMessage(string messageId, Exception exception)
+        public void RecordFailureInfoForMessage(string messageId, Exception exception, bool shouldMoveToErrorQueue = false, bool shouldDeferForRetry = false)
         {
             lock (lockObject)
             {
@@ -21,7 +21,7 @@ namespace NServiceBus
                 if (failureInfoPerMessage.TryGetValue(messageId, out node))
                 {
                     // We have seen this message before, just update the counter and store exception.
-                    node.FailureInfo = new ProcessingFailureInfo(node.FailureInfo.NumberOfFailedAttempts + 1, exception);
+                    node.FailureInfo = new ProcessingFailureInfo(node.FailureInfo.NumberOfFailedAttempts + 1, exception, shouldMoveToErrorQueue, shouldDeferForRetry);
 
                     // Maintain invariant: leastRecentlyUsedMessages.First contains the LRU item.
                     leastRecentlyUsedMessages.Remove(node.LeastRecentlyUsedEntry);
@@ -39,7 +39,7 @@ namespace NServiceBus
 
                     var newNode = new FailureInfoNode(
                         messageId,
-                        new ProcessingFailureInfo(1, exception));
+                        new ProcessingFailureInfo(1, exception, shouldMoveToErrorQueue, shouldDeferForRetry));
 
                     failureInfoPerMessage[messageId] = newNode;
 

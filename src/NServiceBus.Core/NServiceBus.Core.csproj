@@ -123,6 +123,7 @@
     <Compile Include="Recoverability\Faults\MessageToBeRetried.cs" />
     <Compile Include="Recoverability\Faults\MessageFaulted.cs" />
     <Compile Include="Recoverability\Faults\MoveFaultsToErrorQueueBehavior.cs" />
+    <Compile Include="Recoverability\SecondLevelRetries\SecondLevelRetriesBehavior.cs" />
     <Compile Include="Routing\RoutingMappingSettings.cs" />
     <Compile Include="Serialization\SerializationFeature.cs" />
     <Compile Include="Serializers\XML\XmlSerialization.cs" />
@@ -445,7 +446,7 @@
     <Compile Include="Pipeline\PipelineCollection.cs" />
     <Compile Include="Recoverability\SecondLevelRetries\CustomSecondLevelRetryPolicy.cs" />
     <Compile Include="Recoverability\SecondLevelRetries\SecondLevelRetryPolicy.cs" />
-    <Compile Include="Recoverability\SecondLevelRetries\SecondLevelRetriesBehavior.cs" />
+    <Compile Include="Recoverability\SecondLevelRetries\SecondLevelRetriesNoTransactionBehavior.cs" />
     <Compile Include="Transports\PushSettings.cs" />
     <Compile Include="Gateway\IDeduplicateMessages.cs" />
     <Compile Include="Hosting\HostInfoConfigurationExtensions.cs" />

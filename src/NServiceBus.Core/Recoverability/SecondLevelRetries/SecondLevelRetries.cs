@@ -2,6 +2,7 @@ namespace NServiceBus.Features
 {
     using System;
     using Config;
+    using ConsistencyGuarantees;
     using Settings;
     using Transports;
 
@@ -29,9 +30,19 @@ namespace NServiceBus.Features
             var retryPolicy = GetRetryPolicy(context.Settings);
 
             context.Container.RegisterSingleton(typeof(SecondLevelRetryPolicy), retryPolicy);
-            context.Pipeline.Register<SecondLevelRetriesBehavior.Registration>();
 
-            context.Container.ConfigureComponent(b => new SecondLevelRetriesBehavior(retryPolicy, context.Settings.LocalAddress()), DependencyLifecycle.InstancePerCall);
+            if (context.Settings.GetRequiredTransactionModeForReceives() == TransportTransactionMode.None)
+            {
+                context.Pipeline.Register<SecondLevelRetriesNoTransactionBehavior.Registration>();
+
+                context.Container.ConfigureComponent(b => new SecondLevelRetriesNoTransactionBehavior(retryPolicy, context.Settings.LocalAddress()), DependencyLifecycle.InstancePerCall);
+            }
+            else
+            {
+                context.Pipeline.Register<SecondLevelRetriesBehavior.Registration>();
+
+                context.Container.ConfigureComponent(b => new SecondLevelRetriesBehavior(retryPolicy, context.Settings.LocalAddress(), b.Build<FailureInfoStorage>()), DependencyLifecycle.InstancePerCall);
+            }
         }
 
         bool IsEnabledInConfig(FeatureConfigurationContext context)

@@ -21,8 +21,7 @@
         {
             var failureInfo = failureInfoStorage.GetFailureInfoForMessage(context.Message.MessageId);
 
-            // TODO: Encapsulate this condition check.
-            if (failureInfo.NumberOfFailedAttempts > 0)
+            if (failureInfo.ShouldMoveToErrorQueue)
             {
                 try
                 {
@@ -60,7 +59,7 @@
             }
             catch (Exception ex)
             {
-                failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex);
+                failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex, shouldMoveToErrorQueue: true);
 
                 context.AbortReceiveOperation();
             }

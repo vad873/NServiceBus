@@ -17,10 +17,12 @@ namespace NServiceBus.Core.Tests
         {
             var fakeFaultPipeline = new FakeFaultPipeline();
             var errorQueueAddress = "error";
-            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
+            var behavior = new MoveFaultsToErrorQueueBehavior(
                 new FakeCriticalError(),
                 errorQueueAddress,
-                "public-receive-address");
+                "public-receive-address",
+                TransportTransactionMode.None,
+                new FailureInfoStorage());
 
             var context = CreateContext("someid", fakeFaultPipeline);
 
@@ -37,10 +39,12 @@ namespace NServiceBus.Core.Tests
             var criticalError = new FakeCriticalError();
             var fakeDispatchPipeline = new FakeFaultPipeline { ThrowOnDispatch = true };
 
-            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
+            var behavior = new MoveFaultsToErrorQueueBehavior(
                 criticalError,
                 "error",
-                "public-receive-address");
+                "public-receive-address",
+                TransportTransactionMode.None,
+                new FailureInfoStorage());
 
             //the ex should bubble to force the transport to rollback. If not the message will be lost
             Assert.That(async () => await behavior.Invoke(CreateContext("someid", fakeDispatchPipeline), () => { throw new Exception("testex"); }), Throws.InstanceOf<Exception>());
@@ -53,10 +57,12 @@ namespace NServiceBus.Core.Tests
             var fakeFaultPipeline = new FakeFaultPipeline();
             var context = CreateContext("someid", fakeFaultPipeline);
 
-            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
+            var behavior = new MoveFaultsToErrorQueueBehavior(
                 new FakeCriticalError(),
                 "error",
-                "public-receive-address");
+                "public-receive-address",
+                TransportTransactionMode.None,
+                new FailureInfoStorage());
 
             await behavior.Invoke(context, () => { throw new Exception("testex"); });
 
@@ -70,10 +76,12 @@ namespace NServiceBus.Core.Tests
         {
             var fakeFaultPipeline = new FakeFaultPipeline();
 
-            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
+            var behavior = new MoveFaultsToErrorQueueBehavior(
                 new FakeCriticalError(),
                 "error",
-                "public-receive-address");
+                "public-receive-address",
+                TransportTransactionMode.None,
+                new FailureInfoStorage());
 
 
             var context = CreateContext("someid", fakeFaultPipeline);

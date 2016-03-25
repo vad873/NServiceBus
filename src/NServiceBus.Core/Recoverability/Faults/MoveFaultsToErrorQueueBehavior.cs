@@ -8,49 +8,26 @@
 
     class MoveFaultsToErrorQueueBehavior : ForkConnector<ITransportReceiveContext, IFaultContext>
     {
-        // TODO: Remove duplication in MoveFaultsToErrorQueueBehavior and MoveFaultsToErrorQueueNoTransactionBehavior.
-        public MoveFaultsToErrorQueueBehavior(CriticalError criticalError, string errorQueueAddress, string localAddress, FailureInfoStorage failureInfoStorage)
+        public MoveFaultsToErrorQueueBehavior(CriticalError criticalError, string errorQueueAddress, string localAddress, TransportTransactionMode transportTransactionMode, FailureInfoStorage failureInfoStorage)
         {
             this.criticalError = criticalError;
             this.errorQueueAddress = errorQueueAddress;
             this.localAddress = localAddress;
+            this.transportTransactionMode = transportTransactionMode;
             this.failureInfoStorage = failureInfoStorage;
         }
 
         public override async Task Invoke(ITransportReceiveContext context, Func<Task> next, Func<IFaultContext, Task> fork)
         {
-            var failureInfo = failureInfoStorage.GetFailureInfoForMessage(context.Message.MessageId);
+            var message = context.Message;
 
-            if (failureInfo.ShouldMoveToErrorQueue)
+            var failureInfo = failureInfoStorage.GetFailureInfoForMessage(message.MessageId);
+
+            if (MessageShouldBeMovedToErrorQueue(failureInfo))
             {
-                try
-                {
-                    var message = context.Message;
+                await MoveMessageToErrorQueue(context, fork, message, failureInfo.Exception).ConfigureAwait(false);
 
-                    Logger.Error($"Moving message '{message.MessageId}' to the error queue because processing failed due to an exception:", failureInfo.Exception);
-
-                    message.RevertToOriginalBodyIfNeeded();
-
-                    message.SetExceptionHeaders(failureInfo.Exception, localAddress);
-
-                    message.Headers.Remove(Headers.Retries);
-
-                    var outgoingMessage = new OutgoingMessage(message.MessageId, message.Headers, message.Body);
-                    var faultContext = this.CreateFaultContext(context, outgoingMessage, errorQueueAddress, failureInfo.Exception);
-
-                    await fork(faultContext).ConfigureAwait(false);
-
-                    failureInfoStorage.ClearFailureInfoForMessage(message.MessageId);
-
-                    await context.RaiseNotification(new MessageFaulted(message, failureInfo.Exception)).ConfigureAwait(false);
-
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    criticalError.Raise("Failed to forward message to error queue", ex);
-                    throw;
-                }
+                return;
             }
 
             try
@@ -59,25 +36,70 @@
             }
             catch (Exception ex)
             {
-                failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex, shouldMoveToErrorQueue: true);
+                if (CanRollbackTransportTransaction)
+                {
+                    failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex, true);
 
-                context.AbortReceiveOperation();
+                    context.AbortReceiveOperation();
+                }
+                else
+                {
+                    await MoveMessageToErrorQueue(context, fork, message, ex).ConfigureAwait(false);
+                }
+            }
+        }
+
+        bool CanRollbackTransportTransaction => transportTransactionMode != TransportTransactionMode.None;
+
+        bool MessageShouldBeMovedToErrorQueue(ProcessingFailureInfo failureInfo)
+        {
+            return CanRollbackTransportTransaction && failureInfo.ShouldMoveToErrorQueue;
+        }
+
+        async Task MoveMessageToErrorQueue(ITransportReceiveContext context, Func<IFaultContext, Task> fork, IncomingMessage message, Exception exception)
+        {
+            try
+            {
+                Logger.Error($"Moving message '{message.MessageId}' to the error queue because processing failed due to an exception:", exception);
+
+                message.RevertToOriginalBodyIfNeeded();
+
+                message.SetExceptionHeaders(exception, localAddress);
+
+                message.Headers.Remove(Headers.Retries);
+
+                var outgoingMessage = new OutgoingMessage(message.MessageId, message.Headers, message.Body);
+                var faultContext = this.CreateFaultContext(context, outgoingMessage, errorQueueAddress, exception);
+
+                await fork(faultContext).ConfigureAwait(false);
+
+                await context.RaiseNotification(new MessageFaulted(message, exception)).ConfigureAwait(false);
+
+                failureInfoStorage.ClearFailureInfoForMessage(message.MessageId);
+            }
+            catch (Exception ex)
+            {
+                criticalError.Raise("Failed to forward message to error queue", ex);
+
+                throw;
             }
         }
 
         CriticalError criticalError;
         string errorQueueAddress;
-        string localAddress;
         FailureInfoStorage failureInfoStorage;
+        string localAddress;
+        TransportTransactionMode transportTransactionMode;
         static ILog Logger = LogManager.GetLogger<MoveFaultsToErrorQueueBehavior>();
 
         public class Registration : RegisterStep
         {
-            public Registration(string errorQueueAddress, string localAddress)
+            public Registration(string errorQueueAddress, string localAddress, TransportTransactionMode transportTransactionMode)
                 : base("MoveFaultsToErrorQueue", typeof(MoveFaultsToErrorQueueBehavior), "Moved failing messages to the configured error queue", b => new MoveFaultsToErrorQueueBehavior(
                     b.Build<CriticalError>(),
                     errorQueueAddress,
                     localAddress,
+                    transportTransactionMode,
                     b.Build<FailureInfoStorage>()))
             {
                 InsertBeforeIfExists("FirstLevelRetries");

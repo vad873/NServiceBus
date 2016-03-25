@@ -23,15 +23,8 @@ namespace NServiceBus.Features
             var failureInfoStorage = new FailureInfoStorage();
             context.Container.RegisterSingleton(failureInfoStorage);
 
-            if (context.Settings.GetRequiredTransactionModeForReceives() == TransportTransactionMode.None)
-            {
-                context.Pipeline.Register(new MoveFaultsToErrorQueueNoTransactionBehavior.Registration(errorQueue, context.Settings.LocalAddress()));
-            }
-            else
-            {
-                context.Pipeline.Register(new MoveFaultsToErrorQueueBehavior.Registration(errorQueue, context.Settings.LocalAddress()));
-            }
-
+            var transportTransactionMode = context.Settings.GetRequiredTransactionModeForReceives();
+            context.Pipeline.Register(new MoveFaultsToErrorQueueBehavior.Registration(errorQueue, context.Settings.LocalAddress(), transportTransactionMode));
             context.Pipeline.Register("FaultToDispatchConnector", new FaultToDispatchConnector(), "Connector to dispatch faulted messages");
 
             RaiseLegacyNotifications(context);

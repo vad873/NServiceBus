@@ -6,9 +6,9 @@ namespace NServiceBus
     using Pipeline;
     using Transports;
 
-    class MoveFaultsToErrorQueueBehavior : ForkConnector<ITransportReceiveContext, IFaultContext>
+    class MoveFaultsToErrorQueueNoTransactionBehavior : ForkConnector<ITransportReceiveContext, IFaultContext>
     {
-        public MoveFaultsToErrorQueueBehavior(CriticalError criticalError, string errorQueueAddress, string localAddress)
+        public MoveFaultsToErrorQueueNoTransactionBehavior(CriticalError criticalError, string errorQueueAddress, string localAddress)
         {
             this.criticalError = criticalError;
             this.errorQueueAddress = errorQueueAddress;
@@ -53,12 +53,12 @@ namespace NServiceBus
         CriticalError criticalError;
         string errorQueueAddress;
         string localAddress;
-        static ILog Logger = LogManager.GetLogger<MoveFaultsToErrorQueueBehavior>();
+        static ILog Logger = LogManager.GetLogger<MoveFaultsToErrorQueueNoTransactionBehavior>();
 
         public class Registration : RegisterStep
         {
             public Registration(string errorQueueAddress, string localAddress)
-                : base("MoveFaultsToErrorQueue", typeof(MoveFaultsToErrorQueueBehavior), "Moved failing messages to the configured error queue", b => new MoveFaultsToErrorQueueBehavior(
+                : base("MoveFaultsToErrorQueue", typeof(MoveFaultsToErrorQueueNoTransactionBehavior), "Moved failing messages to the configured error queue", b => new MoveFaultsToErrorQueueNoTransactionBehavior(
                     b.Build<CriticalError>(),
                     errorQueueAddress,
                     localAddress))

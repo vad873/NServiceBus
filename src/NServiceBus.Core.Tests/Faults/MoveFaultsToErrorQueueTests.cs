@@ -17,7 +17,7 @@ namespace NServiceBus.Core.Tests
         {
             var fakeFaultPipeline = new FakeFaultPipeline();
             var errorQueueAddress = "error";
-            var behavior = new MoveFaultsToErrorQueueBehavior(
+            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
                 new FakeCriticalError(),
                 errorQueueAddress,
                 "public-receive-address");
@@ -37,7 +37,7 @@ namespace NServiceBus.Core.Tests
             var criticalError = new FakeCriticalError();
             var fakeDispatchPipeline = new FakeFaultPipeline { ThrowOnDispatch = true };
 
-            var behavior = new MoveFaultsToErrorQueueBehavior(
+            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
                 criticalError,
                 "error",
                 "public-receive-address");
@@ -53,7 +53,7 @@ namespace NServiceBus.Core.Tests
             var fakeFaultPipeline = new FakeFaultPipeline();
             var context = CreateContext("someid", fakeFaultPipeline);
 
-            var behavior = new MoveFaultsToErrorQueueBehavior(
+            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
                 new FakeCriticalError(),
                 "error",
                 "public-receive-address");
@@ -70,7 +70,7 @@ namespace NServiceBus.Core.Tests
         {
             var fakeFaultPipeline = new FakeFaultPipeline();
 
-            var behavior = new MoveFaultsToErrorQueueBehavior(
+            var behavior = new MoveFaultsToErrorQueueNoTransactionBehavior(
                 new FakeCriticalError(),
                 "error",
                 "public-receive-address");

@@ -40,7 +40,7 @@
             {
                 if (CanAbortReceiveOperation)
                 {
-                    failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex, true);
+                    failureInfoStorage.MarkForMovingToErrorQueue(message.MessageId, ex);
 
                     context.AbortReceiveOperation();
                 }

@@ -47,7 +47,7 @@
             {
                 if (CanAbortReceiveOperation)
                 {
-                    failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex, shouldDeferForRetry: true);
+                    failureInfoStorage.MarkForDeferralForSecondLevelRetry(context.Message.MessageId, ex);
 
                     context.AbortReceiveOperation();
                 }
@@ -60,7 +60,7 @@
 
         bool MessageShouldBeDeferredForSecondLevelRetry(ProcessingFailureInfo failureInfo)
         {
-            return CanAbortReceiveOperation && failureInfo.ShouldDeferForRetry;
+            return CanAbortReceiveOperation && failureInfo.ShouldDeferForSecondLevelRetry;
         }
 
         async Task DeferMessageForSecondLevelRetry(ITransportReceiveContext context, Func<IRoutingContext, Task> fork, IncomingMessage message, Exception exception)

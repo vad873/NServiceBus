@@ -13,7 +13,22 @@ namespace NServiceBus
             this.maxElements = maxElements;
         }
 
-        public void RecordFailureInfoForMessage(string messageId, Exception exception, bool shouldMoveToErrorQueue = false, bool shouldDeferForRetry = false)
+        public void RecordFailureInfoForMessage(string messageId, Exception exception)
+        {
+            RecordFailureInfoForMessage(messageId, exception, shouldMoveToErrorQueue: false, shouldDeferForSecondLevelRetry: false);
+        }
+
+        public void MarkForMovingToErrorQueue(string messageId, Exception exception)
+        {
+            RecordFailureInfoForMessage(messageId, exception, shouldMoveToErrorQueue: true, shouldDeferForSecondLevelRetry: false);
+        }
+
+        public void MarkForDeferralForSecondLevelRetry(string messageId, Exception exception)
+        {
+            RecordFailureInfoForMessage(messageId, exception, shouldMoveToErrorQueue: false, shouldDeferForSecondLevelRetry: true);
+        }
+
+        void RecordFailureInfoForMessage(string messageId, Exception exception, bool shouldMoveToErrorQueue, bool shouldDeferForSecondLevelRetry)
         {
             lock (lockObject)
             {
@@ -21,7 +36,7 @@ namespace NServiceBus
                 if (failureInfoPerMessage.TryGetValue(messageId, out node))
                 {
                     // We have seen this message before, just update the counter and store exception.
-                    node.FailureInfo = new ProcessingFailureInfo(node.FailureInfo.NumberOfFailedAttempts + 1, exception, shouldMoveToErrorQueue, shouldDeferForRetry);
+                    node.FailureInfo = new ProcessingFailureInfo(node.FailureInfo.NumberOfFailedAttempts + 1, exception, shouldMoveToErrorQueue, shouldDeferForSecondLevelRetry);
 
                     // Maintain invariant: leastRecentlyUsedMessages.First contains the LRU item.
                     leastRecentlyUsedMessages.Remove(node.LeastRecentlyUsedEntry);
@@ -39,7 +54,7 @@ namespace NServiceBus
 
                     var newNode = new FailureInfoNode(
                         messageId,
-                        new ProcessingFailureInfo(1, exception, shouldMoveToErrorQueue, shouldDeferForRetry));
+                        new ProcessingFailureInfo(1, exception, shouldMoveToErrorQueue, shouldDeferForSecondLevelRetry));
 
                     failureInfoPerMessage[messageId] = newNode;
 

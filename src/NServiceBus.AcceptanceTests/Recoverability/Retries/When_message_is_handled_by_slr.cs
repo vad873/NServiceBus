@@ -10,12 +10,12 @@
     using NUnit.Framework;
     using ScenarioDescriptors;
 
-    public class When_message_is_handled_by_slr
+    public class When_message_is_handled_by_slr : NServiceBusAcceptanceTest
     {
         [TestCase(TransportTransactionMode.ReceiveOnly)]
         [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
         [TestCase(TransportTransactionMode.TransactionScope)]
-        public async Task Should_not_send_outgoing_messages(TransportTransactionMode transactionMode)
+        public async Task Should_not_send_outgoing_messages_with_transport_transactions(TransportTransactionMode transactionMode)
         {
             await Scenario.Define<Context>(c =>
             {
@@ -33,6 +33,27 @@
             .Repeat(r => r.For<AllDtcTransports>())
             .Should(c => Assert.Greater(c.NumberOfProcessingAttempts, 1, "Should retry at least once"))
             .Should(c => Assert.IsFalse(c.OutgoingMessageSent, "Outgoing messages should not be sent"))
+            .Run();
+        }
+
+        [Test]
+        public async Task May_send_outgoing_messages_without_transport_transactions()
+        {
+            await Scenario.Define<Context>(c =>
+            {
+                c.Id = Guid.NewGuid();
+                c.TransactionMode = TransportTransactionMode.None;
+            })
+            .WithEndpoint<Endpoint>(b => b.DoNotFailOnErrorMessages()
+                .When((session, context) => session.SendLocal(new InitiatingMessage
+                {
+                    Id = context.Id
+                }))
+            )
+            .WithEndpoint<ErrorSpy>()
+            .Done(c => c.MessageMovedToErrorQueue)
+            .Repeat(r => r.For<AllDtcTransports>())
+            .Should(c => Assert.Greater(c.NumberOfProcessingAttempts, 1, "Should retry at least once"))
             .Run();
         }
 

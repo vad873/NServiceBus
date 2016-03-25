@@ -122,6 +122,7 @@
     <Compile Include="Recoverability\Faults\MessageProcessingFailed.cs" />
     <Compile Include="Recoverability\Faults\MessageToBeRetried.cs" />
     <Compile Include="Recoverability\Faults\MessageFaulted.cs" />
+    <Compile Include="Recoverability\Faults\MoveFaultsToErrorQueueBehavior.cs" />
     <Compile Include="Routing\RoutingMappingSettings.cs" />
     <Compile Include="Serialization\SerializationFeature.cs" />
     <Compile Include="Serializers\XML\XmlSerialization.cs" />

@@ -6,6 +6,7 @@ namespace NServiceBus
     using Pipeline;
     using Transports;
 
+    // TODO: Remove duplication in MoveFaultsToErrorQueueBehavior and MoveFaultsToErrorQueueNoTransactionBehavior.
     class MoveFaultsToErrorQueueNoTransactionBehavior : ForkConnector<ITransportReceiveContext, IFaultContext>
     {
         public MoveFaultsToErrorQueueNoTransactionBehavior(CriticalError criticalError, string errorQueueAddress, string localAddress)

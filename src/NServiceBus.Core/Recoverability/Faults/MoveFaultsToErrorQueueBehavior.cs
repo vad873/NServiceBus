@@ -17,6 +17,8 @@
             this.failureInfoStorage = failureInfoStorage;
         }
 
+        bool CanAbortReceiveOperation => transportTransactionMode != TransportTransactionMode.None;
+
         public override async Task Invoke(ITransportReceiveContext context, Func<Task> next, Func<IFaultContext, Task> fork)
         {
             var message = context.Message;
@@ -36,7 +38,7 @@
             }
             catch (Exception ex)
             {
-                if (CanRollbackTransportTransaction)
+                if (CanAbortReceiveOperation)
                 {
                     failureInfoStorage.RecordFailureInfoForMessage(context.Message.MessageId, ex, true);
 
@@ -49,11 +51,9 @@
             }
         }
 
-        bool CanRollbackTransportTransaction => transportTransactionMode != TransportTransactionMode.None;
-
         bool MessageShouldBeMovedToErrorQueue(ProcessingFailureInfo failureInfo)
         {
-            return CanRollbackTransportTransaction && failureInfo.ShouldMoveToErrorQueue;
+            return CanAbortReceiveOperation && failureInfo.ShouldMoveToErrorQueue;
         }
 
         async Task MoveMessageToErrorQueue(ITransportReceiveContext context, Func<IFaultContext, Task> fork, IncomingMessage message, Exception exception)

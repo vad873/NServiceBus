@@ -446,7 +446,6 @@
     <Compile Include="Pipeline\PipelineCollection.cs" />
     <Compile Include="Recoverability\SecondLevelRetries\CustomSecondLevelRetryPolicy.cs" />
     <Compile Include="Recoverability\SecondLevelRetries\SecondLevelRetryPolicy.cs" />
-    <Compile Include="Recoverability\SecondLevelRetries\SecondLevelRetriesNoTransactionBehavior.cs" />
     <Compile Include="Transports\PushSettings.cs" />
     <Compile Include="Gateway\IDeduplicateMessages.cs" />
     <Compile Include="Hosting\HostInfoConfigurationExtensions.cs" />

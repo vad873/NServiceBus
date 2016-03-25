@@ -21,7 +21,7 @@
         {
             var delay = TimeSpan.FromSeconds(5);
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(new FakePolicy(delay), "test-address-for-this-pipeline");
+            var behavior = new SecondLevelRetriesBehavior(new FakePolicy(delay), "test-address-for-this-pipeline", TransportTransactionMode.None, new FailureInfoStorage());
 
             var context = CreateContext("someid", 1, fakeDispatchPipeline);
 
@@ -38,7 +38,7 @@
         {
             var delay = TimeSpan.FromSeconds(5);
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(new FakePolicy(delay), "MyAddress");
+            var behavior = new SecondLevelRetriesBehavior(new FakePolicy(delay), "MyAddress", TransportTransactionMode.None, new FailureInfoStorage());
 
             await behavior.Invoke(CreateContext("someid", 0, fakeDispatchPipeline), () => { throw new Exception("testex"); });
 
@@ -49,7 +49,7 @@
         public void ShouldSkipRetryIfNoDelayIsReturned()
         {
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(new FakePolicy(), "MyAddress");
+            var behavior = new SecondLevelRetriesBehavior(new FakePolicy(), "MyAddress", TransportTransactionMode.None, new FailureInfoStorage());
             var context = CreateContext("someid", 1, fakeDispatchPipeline);
 
             Assert.That(async () => await behavior.Invoke(context, () => { throw new Exception("testex"); }), Throws.InstanceOf<Exception>());
@@ -61,7 +61,7 @@
         public void ShouldSkipRetryForDeserializationErrors()
         {
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(new FakePolicy(TimeSpan.FromSeconds(5)), "MyAddress");
+            var behavior = new SecondLevelRetriesBehavior(new FakePolicy(TimeSpan.FromSeconds(5)), "MyAddress", TransportTransactionMode.None, new FailureInfoStorage());
             var context = CreateContext("someid", 1, fakeDispatchPipeline);
 
             Assert.That(async () => await behavior.Invoke(context, () => { throw new MessageDeserializationException("testex"); }), Throws.InstanceOf<MessageDeserializationException>());
@@ -74,7 +74,7 @@
             var retryPolicy = new FakePolicy(TimeSpan.FromSeconds(5));
 
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(retryPolicy, "MyAddress");
+            var behavior = new SecondLevelRetriesBehavior(retryPolicy, "MyAddress", TransportTransactionMode.None, new FailureInfoStorage());
 
             var currentRetry = 3;
 
@@ -92,7 +92,7 @@
 
             context.Message.Headers.Clear();
 
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(retryPolicy, "MyAddress");
+            var behavior = new SecondLevelRetriesBehavior(retryPolicy, "MyAddress", TransportTransactionMode.None, new FailureInfoStorage());
 
             await behavior.Invoke(context, () => { throw new Exception("testex"); });
 
@@ -107,7 +107,7 @@
             var fakeDispatchPipeline = new FakeDispatchPipeline();
             var context = CreateContext("someId", 1, fakeDispatchPipeline, Encoding.UTF8.GetBytes(originalContent));
             var retryPolicy = new FakePolicy(TimeSpan.FromSeconds(0));
-            var behavior = new SecondLevelRetriesNoTransactionBehavior(retryPolicy, "test-address-for-this-pipeline");
+            var behavior = new SecondLevelRetriesBehavior(retryPolicy, "test-address-for-this-pipeline", TransportTransactionMode.None, new FailureInfoStorage());
 
             var message = context.Message;
             message.Body = Encoding.UTF8.GetBytes("modified content");
